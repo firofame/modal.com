@@ -33,7 +33,7 @@ def download_models():
     ]
     list(hf_download.starmap(models_to_download))
 
-@app.function(allow_concurrent_inputs=2, concurrency_limit=1, container_idle_timeout=1200, gpu="L4", volumes={"/root/comfy/ComfyUI/models": vol})
-@modal.web_server(8188, startup_timeout=300)
+@app.function(allow_concurrent_inputs=2, concurrency_limit=1, container_idle_timeout=60*20, timeout=60*60*2, gpu="L4", volumes={"/root/comfy/ComfyUI/models": vol})
+@modal.web_server(8188, startup_timeout=60*5)
 def ui():
     subprocess.Popen("comfy launch -- --listen", shell=True)

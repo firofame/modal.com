@@ -30,8 +30,8 @@ def download_models():
     ]
     list(hf_download.starmap(models_to_download))
 
-@app.function(allow_concurrent_inputs=2, concurrency_limit=1, container_idle_timeout=1200, timeout=1800, gpu="L40S", volumes={"/root/ai-toolkit/FLUX.1-dev": vol})
-@web_server(7860, startup_timeout=1800)
+@app.function(allow_concurrent_inputs=2, concurrency_limit=1, container_idle_timeout=60*20, timeout=60*60*3, gpu="L40S", volumes={"/root/ai-toolkit/FLUX.1-dev": vol})
+@web_server(7860, startup_timeout=60*5)
 def ui():
     os.system("ls /root/ai-toolkit/FLUX.1-dev")
     subprocess.Popen("cd /root/ai-toolkit && python flux_train_ui.py", shell=True)
