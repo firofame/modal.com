@@ -28,8 +28,6 @@ def download_models():
         ("comfyanonymous/flux_text_encoders", "t5xxl_fp8_e4m3fn_scaled.safetensors", "clip"),
         ("comfyanonymous/flux_text_encoders", "clip_l.safetensors", "clip"),
         ("black-forest-labs/FLUX.1-schnell", "ae.safetensors", "vae"),
-        ("firofame/firoz", "firoz.safetensors", "loras"),
-        ("firofame/thilakan", "thilakan.safetensors", "loras"),
     ]
     list(hf_download.starmap(models_to_download))
 
