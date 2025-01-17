@@ -22,7 +22,7 @@ def hf_download(repo_id: str, filename: str, model_type: str):
 @app.local_entrypoint()
 def download_models():
     models_to_download = [
-        ("SG161222/RealVisXL_V5.0_Lightning", "RealVisXL_V5.0_Lightning_fp16.safetensors", "Stable-diffusion"),
+        ("lllyasviel/flux1-dev-bnb-nf4", "flux1-dev-bnb-nf4-v2.safetensors", "Stable-diffusion"),
     ]
     list(hf_download.starmap(models_to_download))
 
