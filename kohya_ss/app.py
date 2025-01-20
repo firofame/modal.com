@@ -37,7 +37,7 @@ def download_models():
     ]
     list(hf_download.starmap(models_to_download))
 
-@app.function(volumes={"/root/models": vol}, gpu="L4")
+@app.function(timeout=60*60, volumes={"/root/models": vol}, gpu="L4")
 def run_training():
     from accelerate.utils import write_basic_config
     write_basic_config(mixed_precision='bf16')
@@ -60,19 +60,16 @@ def run_training():
         "--mixed_precision", "bf16",
         "--save_precision", "bf16",
         "--network_module", "networks.lora_flux",
-        "--network_args", "train_double_block_indices=none", "train_single_block_indices=7,20", "single_mod_dim=0",
+        "--network_dim", "4",
+        "--network_train_unet_only",
+        "--optimizer_type", "adamw8bit",
+        "--learning_rate", "1e-4",
         "--cache_text_encoder_outputs",
         "--cache_text_encoder_outputs_to_disk",
-        "--network_train_unet_only",
-        "--optimizer_type", "adafactor",
-        "--optimizer_args", "relative_step=False", "scale_parameter=False", "warmup_init=False",
-        "--lr_scheduler", "constant_with_warmup",
-        "--max_grad_norm", "0.0",
-        "--learning_rate", "1e-4",
-        "--highvram",
         "--fp8_base",
+        "--highvram",
         "--max_train_epochs", "10",
-        "--save_every_n_epochs", "5",
+        "--save_every_n_epochs", "10",
         "--dataset_config", "/root/dataset_config.toml",
         "--output_dir", "/root/models",
         "--output_name", "flux-lora-name",
