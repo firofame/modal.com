@@ -37,7 +37,7 @@ def download_models():
     ]
     list(hf_download.starmap(models_to_download))
 
-@app.function(volumes={"/root/models": vol}, gpu="T4")
+@app.function(volumes={"/root/models": vol}, gpu="L4")
 def run_training():
     from accelerate.utils import write_basic_config
     write_basic_config(mixed_precision='bf16')
@@ -62,6 +62,7 @@ def run_training():
         "--network_module", "networks.lora_flux",
         "--network_args", "train_double_block_indices=none", "train_single_block_indices=7,20", "single_mod_dim=0",
         "--cache_text_encoder_outputs",
+        "--cache_text_encoder_outputs_to_disk",
         "--network_train_unet_only",
         "--optimizer_type", "adafactor",
         "--optimizer_args", "relative_step=False", "scale_parameter=False", "warmup_init=False",
