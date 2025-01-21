@@ -24,20 +24,7 @@ app = App("kohya_ss", image=image, secrets=[Secret.from_name("huggingface-secret
 
 vol = Volume.from_name("kohya_ss-models", create_if_missing=True)
 
-@app.function(volumes={"/root/models": vol})
-def hf_download(repo_id: str, filename: str, model_type: str):
-    from huggingface_hub import hf_hub_download
-    local_dir = f"/root/models/{model_type}"
-    hf_hub_download(repo_id=repo_id, filename=filename, local_dir=local_dir)
-
-@app.local_entrypoint()
-def download_models():
-    models_to_download = [
-        ("black-forest-labs/FLUX.1-schnell", "ae.safetensors", "flux"),
-    ]
-    list(hf_download.starmap(models_to_download))
-
-@app.function(timeout=60*60, volumes={"/root/models": vol}, gpu="L4")
+@app.function(timeout=60*60, volumes={"/root/models": vol}, gpu="L40S")
 def run_training():
     from accelerate.utils import write_basic_config
     write_basic_config(mixed_precision='bf16')
@@ -48,9 +35,9 @@ def run_training():
 
     command = [
         "accelerate", "launch", "flux_train_network.py",
-        "--pretrained_model_name_or_path", "/root/models/flux/flux1-dev-fp8.safetensors",
+        "--pretrained_model_name_or_path", "/root/models/flux/flux1-dev.safetensors",
         "--clip_l", "/root/models/flux/clip_l.safetensors",
-        "--t5xxl", "/root/models/flux/t5xxl_fp8_e4m3fn.safetensors",
+        "--t5xxl", "/root/models/flux/t5xxl_fp16.safetensors",
         "--ae", "/root/models/flux/ae.safetensors",
         "--cache_latents_to_disk",
         "--save_model_as", "safetensors",
@@ -68,7 +55,6 @@ def run_training():
         "--learning_rate", "1e-4",
         "--cache_text_encoder_outputs",
         "--cache_text_encoder_outputs_to_disk",
-        "--fp8_base",
         "--highvram",
         "--max_train_epochs", "1",
         "--save_every_n_epochs", "1",
@@ -92,6 +78,17 @@ def run_training():
         repo_id="firofame/firoz",
         token=os.environ["HF_TOKEN"]
     )
-    
-    subprocess.run(f"rm /root/models/{MODEL_NAME}.safetensors", shell=True)
+
+@app.local_entrypoint()
+def main():
+    run_training.remote()
+
+@app.function(volumes={"/root/models": vol})
+def delete():
+    subprocess.run("rm /root/models/flux_lora_firoz.safetensors", shell=True)
     subprocess.run("cd /root/models && ls", shell=True)
+
+@app.function(volumes={"/root/models": vol})
+def download():
+    from huggingface_hub import hf_hub_download
+    hf_hub_download(repo_id='black-forest-labs/FLUX.1-dev', filename='flux1-dev.safetensors', local_dir='/root/models/flux', token=os.environ["HF_TOKEN"])
