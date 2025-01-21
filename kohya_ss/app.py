@@ -68,8 +68,8 @@ def run_training():
         "--cache_text_encoder_outputs_to_disk",
         "--fp8_base",
         "--highvram",
-        "--max_train_epochs", "10",
-        "--save_every_n_epochs", "10",
+        "--max_train_epochs", "1",
+        "--save_every_n_epochs", "1",
         "--dataset_config", "/root/dataset_config.toml",
         "--output_dir", "/root/models",
         "--output_name", "flux-lora-name",
@@ -80,9 +80,24 @@ def run_training():
     ]
 
     subprocess.run(command, check=True)
-
     subprocess.run("cd /root/models && ls", shell=True)
 
 @app.local_entrypoint()
 def main():
     run_training.remote()
+
+@app.function(volumes={"/root/models": vol})
+def hf_upload():
+    from huggingface_hub import HfApi
+    api = HfApi()
+    api.upload_file(
+        path_or_fileobj="/root/models/flux-lora-name.safetensors",
+        path_in_repo="flux_lora_firoz_v0.safetensors",
+        repo_id="firofame/firoz",
+        token=os.environ["HF_TOKEN"]
+    )
+
+@app.function(volumes={"/root/models": vol})
+def delete_file():
+    subprocess.run("rm /root/models/flux-lora-name.safetensors", shell=True)
+    subprocess.run("cd /root/models && ls", shell=True)

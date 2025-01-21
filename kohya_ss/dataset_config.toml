@@ -15,5 +15,5 @@ shuffle_caption = false
 
   [[datasets.subsets]]
   image_dir = "/root/images"
-  num_repeats = 10
+  num_repeats = 100
   caption_extension = ".txt"
