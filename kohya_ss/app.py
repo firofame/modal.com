@@ -44,6 +44,8 @@ def run_training():
 
     os.chdir("/root/kohya_ss/sd-scripts")
 
+    MODEL_NAME = "flux_lora_firoz"
+
     command = [
         "accelerate", "launch", "flux_train_network.py",
         "--pretrained_model_name_or_path", "/root/models/flux/flux1-dev-fp8.safetensors",
@@ -72,7 +74,7 @@ def run_training():
         "--save_every_n_epochs", "1",
         "--dataset_config", "/root/dataset_config.toml",
         "--output_dir", "/root/models",
-        "--output_name", "flux-lora-name",
+        "--output_name", MODEL_NAME,
         "--timestep_sampling", "shift",
         "--discrete_flow_shift", "3.1582",
         "--model_prediction_type", "raw",
@@ -82,22 +84,14 @@ def run_training():
     subprocess.run(command, check=True)
     subprocess.run("cd /root/models && ls", shell=True)
 
-@app.local_entrypoint()
-def main():
-    run_training.remote()
-
-@app.function(volumes={"/root/models": vol})
-def hf_upload():
     from huggingface_hub import HfApi
     api = HfApi()
     api.upload_file(
-        path_or_fileobj="/root/models/flux-lora-name.safetensors",
-        path_in_repo="flux_lora_firoz_v0.safetensors",
+        path_or_fileobj=f"/root/models/{MODEL_NAME}.safetensors",
+        path_in_repo=f"{MODEL_NAME}.safetensors",
         repo_id="firofame/firoz",
         token=os.environ["HF_TOKEN"]
     )
-
-@app.function(volumes={"/root/models": vol})
-def delete_file():
-    subprocess.run("rm /root/models/flux-lora-name.safetensors", shell=True)
+    
+    subprocess.run(f"rm /root/models/{MODEL_NAME}.safetensors", shell=True)
     subprocess.run("cd /root/models && ls", shell=True)
