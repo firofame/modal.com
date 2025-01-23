@@ -1,94 +1,52 @@
-import subprocess
 import os
+import subprocess
 from modal import App, Image, Secret, Volume
 
 image = (
     Image.debian_slim(python_version="3.11")
-    .apt_install("libgl1", "libglib2.0-0", "git", "unzip")
-    .run_commands("git clone --recursive --branch sd3-flux.1 https://github.com/bmaltais/kohya_ss /root/kohya_ss")
-    .run_commands("cd /root/kohya_ss/sd-scripts && pip install --use-pep517 --upgrade -r requirements.txt")
-    .pip_install(
-        "torch==2.4.0",
-        "torchvision==0.19.0",
-        index_url="https://download.pytorch.org/whl/cu124",
-    )
-    .run_commands("python -m pip install --index-url https://download.pytorch.org/whl/cu124 torch==2.4.0 torchvision==0.19.0")
-    .add_local_file("dataset_config.toml", "/root/dataset_config.toml", copy=True)
+    .apt_install("libgl1", "libglib2.0-0", "git", "unzip", "wget")
+    .run_commands("wget -P /root https://raw.githubusercontent.com/huggingface/diffusers/main/examples/dreambooth/train_dreambooth_lora_flux.py")
+    .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu126 -U -q")
+    .run_commands("pip install git+https://github.com/huggingface/diffusers -U -q")
+    .run_commands("pip install git+https://github.com/huggingface/transformers -U -q")
+    .run_commands("pip install git+https://github.com/huggingface/accelerate -U -q")
+    .run_commands("pip install -r https://raw.githubusercontent.com/huggingface/diffusers/main/examples/dreambooth/requirements_flux.txt -U -q")
+    .run_commands("pip install prodigyopt -U -q")
     .add_local_file("images.zip", "/root/images.zip", copy=True)
     .run_commands("unzip /root/images.zip -d /root/images && rm /root/images.zip")
 )
 
 image = image.pip_install("huggingface_hub[hf_transfer]").env({"HF_HUB_ENABLE_HF_TRANSFER": "1"}).run_commands("rm -rf /root/models")
 
-app = App("kohya_ss", image=image, secrets=[Secret.from_name("huggingface-secret")])
+app = App("dreambooth", image=image, secrets=[Secret.from_name("huggingface-secret")])
 
-vol = Volume.from_name("kohya_ss-models", create_if_missing=True)
+vol = Volume.from_name("dreambooth-models", create_if_missing=True)
 
 @app.function(timeout=60*60, volumes={"/root/models": vol}, gpu="L40S")
 def run_training():
     from accelerate.utils import write_basic_config
-    write_basic_config(mixed_precision='bf16')
-
-    os.chdir("/root/kohya_ss/sd-scripts")
-
-    MODEL_NAME = "flux_lora_firoz"
+    write_basic_config()
 
     command = [
-        "accelerate", "launch", "flux_train_network.py",
-        "--pretrained_model_name_or_path", "/root/models/flux/flux1-dev.safetensors",
-        "--clip_l", "/root/models/flux/clip_l.safetensors",
-        "--t5xxl", "/root/models/flux/t5xxl_fp16.safetensors",
-        "--ae", "/root/models/flux/ae.safetensors",
-        "--cache_latents_to_disk",
-        "--save_model_as", "safetensors",
-        "--sdpa",
-        "--persistent_data_loader_workers",
-        "--max_data_loader_n_workers", "2",
-        "--seed", "42",
-        "--gradient_checkpointing",
-        "--mixed_precision", "bf16",
-        "--save_precision", "bf16",
-        "--network_module", "networks.lora_flux",
-        "--network_dim", "4",
-        "--network_train_unet_only",
-        "--optimizer_type", "adamw8bit",
-        "--learning_rate", "1e-4",
-        "--cache_text_encoder_outputs",
-        "--cache_text_encoder_outputs_to_disk",
-        "--highvram",
-        "--max_train_epochs", "1",
-        "--save_every_n_epochs", "1",
-        "--dataset_config", "/root/dataset_config.toml",
-        "--output_dir", "/root/models",
-        "--output_name", MODEL_NAME,
-        "--timestep_sampling", "shift",
-        "--discrete_flow_shift", "3.1582",
-        "--model_prediction_type", "raw",
-        "--guidance_scale", "1.0",
+        "accelerate", "launch", "train_dreambooth_lora_flux.py",
+        "--pretrained_model_name_or_path=/root/models/flux",
+        "--instance_data_dir=/root/images",
+        "--instance_prompt=manjuw woman",
+        "--optimizer=prodigy",
+        "--learning_rate=1.",
+        "--max_train_steps=1000",
+        "--mixed_precision=bf16",
+        "--train_batch_size=2",
+        "--push_to_hub"
     ]
-
     subprocess.run(command, check=True)
-    subprocess.run("cd /root/models && ls", shell=True)
-
-    from huggingface_hub import HfApi
-    api = HfApi()
-    api.upload_file(
-        path_or_fileobj=f"/root/models/{MODEL_NAME}.safetensors",
-        path_in_repo=f"{MODEL_NAME}.safetensors",
-        repo_id="firofame/firoz",
-        token=os.environ["HF_TOKEN"]
-    )
 
 @app.local_entrypoint()
 def main():
     run_training.remote()
 
 @app.function(volumes={"/root/models": vol})
-def delete():
-    subprocess.run("rm /root/models/flux_lora_firoz.safetensors", shell=True)
-    subprocess.run("cd /root/models && ls", shell=True)
-
-@app.function(volumes={"/root/models": vol})
 def download():
-    from huggingface_hub import hf_hub_download
-    hf_hub_download(repo_id='black-forest-labs/FLUX.1-dev', filename='flux1-dev.safetensors', local_dir='/root/models/flux', token=os.environ["HF_TOKEN"])
+    from huggingface_hub import snapshot_download, hf_hub_download
+    snapshot_download(repo_id='black-forest-labs/FLUX.1-dev', local_dir='/root/models/flux', token=os.environ["HF_TOKEN"])
+    subprocess.run(["ls", "/root/models/flux"], check=True)
