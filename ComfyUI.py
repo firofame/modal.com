@@ -5,14 +5,17 @@ image = modal.Image.debian_slim(python_version="3.11").apt_install("git", "libgl
 image = image.pip_install("comfy-cli").run_commands("comfy --skip-prompt install --nvidia")
 image = image.run_commands("comfy node install https://github.com/crystian/ComfyUI-Crystools")
 image = image.run_commands("comfy node install https://github.com/city96/ComfyUI-GGUF")
-image = image.run_commands("comfy node install https://github.com/kijai/ComfyUI-SUPIR")
-image = image.run_commands("comfy node install https://github.com/Gourieff/ComfyUI-ReActor")
+image = image.run_commands("comfy node install https://github.com/kijai/ComfyUI-Florence2")
 
 image = image.pip_install("huggingface_hub[hf_transfer]").env({"HF_HUB_ENABLE_HF_TRANSFER": "1"}).run_commands("rm -rf /root/comfy/ComfyUI/models")
 
 app = modal.App(name="ComfyUI", image=image)
 
 vol = modal.Volume.from_name("ComfyUI-models", create_if_missing=True)
+
+@app.function(volumes={"/root/models": vol})
+def rm_file():
+    subprocess.run("rm -rf /root/models/vae/pytorch_lora_weights.safetensors", shell=True)
 
 @app.function(volumes={"/root/models": vol})
 def hf_download(repo_id: str, filename: str, model_type: str):
@@ -26,10 +29,11 @@ def hf_download(repo_id: str, filename: str, model_type: str):
 @app.local_entrypoint()
 def download_models():
     models_to_download = [
-        ("AdamCodd/vit-base-nsfw-detector", "config.json", "nsfw_detector/vit-base-nsfw-detector"),
-        ("AdamCodd/vit-base-nsfw-detector", "confusion_matrix.png", "nsfw_detector/vit-base-nsfw-detector"),
-        ("AdamCodd/vit-base-nsfw-detector", "model.safetensors", "nsfw_detector/vit-base-nsfw-detector"),
-        ("AdamCodd/vit-base-nsfw-detector", "preprocessor_config.json", "nsfw_detector/vit-base-nsfw-detector"),
+        ("city96/FLUX.1-dev-gguf", "flux1-dev-Q8_0.gguf", "unet"),
+        ("city96/t5-v1_1-xxl-encoder-gguf", "t5-v1_1-xxl-encoder-Q8_0.gguf", "clip"),
+        ("comfyanonymous/flux_text_encoders", "clip_l.safetensors", "clip"),
+        ("black-forest-labs/FLUX.1-schnell", "ae.safetensors", "vae"),
+        ("firofame/flux-dreambooth-lora", "checkpoint-500/pytorch_lora_weights.safetensors", "loras"),
     ]
     list(hf_download.starmap(models_to_download))
 
