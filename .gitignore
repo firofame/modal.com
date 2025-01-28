@@ -1,4 +1,4 @@
-# ignore .zip
+*.DS_Store
 *.zip
 
 # Byte-compiled / optimized / DLL files
