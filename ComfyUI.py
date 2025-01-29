@@ -32,7 +32,7 @@ def hf_download(repo_id: str, filename: str, model_type: str):
 @app.local_entrypoint()
 def download_models():
     models_to_download = [
-        ("SG161222/Realistic_Vision_V5.1_noVAE", "Realistic_Vision_V5.1.safetensors", "checkpoints"),
+        ("cyberdelia/CyberRealistic", "CyberRealistic_V7.0_FP32.safetensors", "checkpoints"),
         ("stabilityai/sd-vae-ft-mse-original", "vae-ft-mse-840000-ema-pruned.safetensors", "vae"),
         ("ezioruan/inswapper_128.onnx", "inswapper_128.onnx", "insightface"),
     ]
