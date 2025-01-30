@@ -44,7 +44,6 @@ image = (
 
 app = modal.App(name="comfyui", image=image)
 
-
 @app.function(allow_concurrent_inputs=10, concurrency_limit=1, gpu="T4", volumes={"/cache": vol})
 @modal.web_server(8188, startup_timeout=60)
 def ui():
