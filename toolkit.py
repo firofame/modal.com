@@ -5,7 +5,7 @@ import os
 os.environ["GRADIO_SERVER_NAME"] = "0.0.0.0"
 
 image = (
-    modal.Image.debian_slim(python_version="3.12")
+    modal.Image.debian_slim(python_version="3.11")
     .apt_install("libgl1", "libglib2.0-0", "git")
     .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu126")
     .run_commands("git clone -b fix/gradient-checkpointing --single-branch https://github.com/jhj0517/ai-toolkit /root/ai-toolkit")
