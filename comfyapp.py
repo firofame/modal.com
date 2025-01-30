@@ -3,7 +3,7 @@ import modal
 import os
 
 image = (
-    modal.Image.debian_slim(python_version="3.11")
+    modal.Image.debian_slim(python_version="3.12")
     .apt_install("libgl1", "libglib2.0-0", "git")
     .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu126")
     .pip_install("comfy-cli", "onnxruntime-gpu")
