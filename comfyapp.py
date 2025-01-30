@@ -10,8 +10,6 @@ image = (
     .run_commands("comfy --skip-prompt install --nvidia")
     .pip_install("huggingface_hub[hf_transfer]")
     .env({"HF_DATASETS_TRUST_REMOTE_CODE": "1", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
-    .run_commands("comfy node install https://github.com/Gourieff/ComfyUI-ReActor")
-    .run_commands("comfy node install https://github.com/cubiq/ComfyUI_IPAdapter_plus")
     .run_commands("comfy node install https://github.com/city96/ComfyUI-GGUF")
 )
 

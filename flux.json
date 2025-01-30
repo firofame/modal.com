@@ -145,136 +145,6 @@
       ]
     },
     {
-      "id": 9,
-      "type": "SaveImage",
-      "pos": [
-        1428.8203125,
-        198.13671875
-      ],
-      "size": [
-        539.0333251953125,
-        841.5996704101562
-      ],
-      "flags": {},
-      "order": 16,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 9
-        }
-      ],
-      "outputs": [],
-      "properties": {},
-      "widgets_values": [
-        "ComfyUI"
-      ]
-    },
-    {
-      "id": 26,
-      "type": "FluxGuidance",
-      "pos": [
-        149.70703125,
-        9.0859375
-      ],
-      "size": [
-        317.4000244140625,
-        58
-      ],
-      "flags": {},
-      "order": 11,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "conditioning",
-          "type": "CONDITIONING",
-          "link": 41
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            42
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "FluxGuidance"
-      },
-      "widgets_values": [
-        3.5
-      ],
-      "color": "#233",
-      "bgcolor": "#355"
-    },
-    {
-      "id": 30,
-      "type": "ModelSamplingFlux",
-      "pos": [
-        128.48046875,
-        452.609375
-      ],
-      "size": [
-        315,
-        130
-      ],
-      "flags": {},
-      "order": 10,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 131,
-          "slot_index": 0
-        },
-        {
-          "name": "width",
-          "type": "INT",
-          "link": 115,
-          "slot_index": 1,
-          "widget": {
-            "name": "width"
-          }
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "link": 114,
-          "slot_index": 2,
-          "widget": {
-            "name": "height"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            54,
-            55
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "ModelSamplingFlux"
-      },
-      "widgets_values": [
-        1.15,
-        0.5,
-        512,
-        768
-      ]
-    },
-    {
       "id": 42,
       "type": "UnetLoaderGGUF",
       "pos": [
@@ -307,46 +177,6 @@
       ]
     },
     {
-      "id": 35,
-      "type": "PrimitiveNode",
-      "pos": [
-        -230.2578125,
-        649.97265625
-      ],
-      "size": [
-        236.80859375,
-        82
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "INT",
-          "type": "INT",
-          "links": [
-            113,
-            114
-          ],
-          "slot_index": 0,
-          "widget": {
-            "name": "height"
-          }
-        }
-      ],
-      "title": "height",
-      "properties": {
-        "Run widget replace on values": false
-      },
-      "widgets_values": [
-        768,
-        "fixed"
-      ],
-      "color": "#323",
-      "bgcolor": "#535"
-    },
-    {
       "id": 34,
       "type": "PrimitiveNode",
       "pos": [
@@ -358,7 +188,7 @@
         84.7421875
       ],
       "flags": {},
-      "order": 3,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -439,7 +269,7 @@
         78
       ],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
@@ -475,7 +305,7 @@
       },
       "widgets_values": [
         512,
-        768,
+        512,
         1
       ]
     },
@@ -491,7 +321,7 @@
         58
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -556,6 +386,110 @@
       "widgets_values": []
     },
     {
+      "id": 11,
+      "type": "DualCLIPLoader",
+      "pos": [
+        88.59761047363281,
+        279.6257019042969
+      ],
+      "size": [
+        355.6446228027344,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            10
+          ],
+          "slot_index": 0,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DualCLIPLoader"
+      },
+      "widgets_values": [
+        "t5xxl_fp8_e4m3fn_scaled.safetensors",
+        "clip_l.safetensors",
+        "flux",
+        "default"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        159.52838134765625,
+        144.18426513671875
+      ],
+      "size": [
+        285.6000061035156,
+        76
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 10
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            41
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "firofame man"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 9,
+      "type": "SaveImage",
+      "pos": [
+        1428.8203125,
+        198.13671875
+      ],
+      "size": [
+        524.9122314453125,
+        574.2142333984375
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 9
+        }
+      ],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "ComfyUI"
+      ]
+    },
+    {
       "id": 25,
       "type": "RandomNoise",
       "pos": [
@@ -584,31 +518,93 @@
         "Node name for S&R": "RandomNoise"
       },
       "widgets_values": [
-        592025881928140,
-        "randomize"
+        0,
+        "fixed"
       ],
       "color": "#2a363b",
       "bgcolor": "#3f5159"
     },
     {
-      "id": 6,
-      "type": "CLIPTextEncode",
+      "id": 30,
+      "type": "ModelSamplingFlux",
       "pos": [
-        159.52838134765625,
-        144.18426513671875
+        233.1223907470703,
+        452.00762939453125
       ],
       "size": [
-        285.6000061035156,
-        76
+        210,
+        122
       ],
       "flags": {},
-      "order": 9,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 10
+          "name": "model",
+          "type": "MODEL",
+          "link": 131,
+          "slot_index": 0
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "link": 115,
+          "slot_index": 1,
+          "widget": {
+            "name": "width"
+          }
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "link": 114,
+          "slot_index": 2,
+          "widget": {
+            "name": "height"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            54,
+            55
+          ],
+          "slot_index": 0,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModelSamplingFlux"
+      },
+      "widgets_values": [
+        1.15,
+        0.5,
+        512,
+        512
+      ]
+    },
+    {
+      "id": 26,
+      "type": "FluxGuidance",
+      "pos": [
+        225.76611328125,
+        16.996482849121094
+      ],
+      "size": [
+        211.60000610351562,
+        58
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 41
         }
       ],
       "outputs": [
@@ -616,31 +612,31 @@
           "name": "CONDITIONING",
           "type": "CONDITIONING",
           "links": [
-            41
+            42
           ],
-          "slot_index": 0
+          "slot_index": 0,
+          "shape": 3
         }
       ],
-      "title": "CLIP Text Encode (Positive Prompt)",
       "properties": {
-        "Node name for S&R": "CLIPTextEncode"
+        "Node name for S&R": "FluxGuidance"
       },
       "widgets_values": [
-        "firofame man eating an apple"
+        3.5
       ],
-      "color": "#232",
-      "bgcolor": "#353"
+      "color": "#233",
+      "bgcolor": "#355"
     },
     {
-      "id": 11,
-      "type": "DualCLIPLoader",
+      "id": 35,
+      "type": "PrimitiveNode",
       "pos": [
-        88.59761047363281,
-        279.6257019042969
+        -230.2578125,
+        649.97265625
       ],
       "size": [
-        355.6446228027344,
-        106
+        236.80859375,
+        82
       ],
       "flags": {},
       "order": 6,
@@ -648,24 +644,28 @@
       "inputs": [],
       "outputs": [
         {
-          "name": "CLIP",
-          "type": "CLIP",
+          "name": "INT",
+          "type": "INT",
           "links": [
-            10
+            113,
+            114
           ],
           "slot_index": 0,
-          "shape": 3
+          "widget": {
+            "name": "height"
+          }
         }
       ],
+      "title": "height",
       "properties": {
-        "Node name for S&R": "DualCLIPLoader"
+        "Run widget replace on values": false
       },
       "widgets_values": [
-        "t5xxl_fp8_e4m3fn_scaled.safetensors",
-        "clip_l.safetensors",
-        "flux",
-        "default"
-      ]
+        512,
+        "fixed"
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
     },
     {
       "id": 41,
@@ -703,7 +703,7 @@
       },
       "widgets_values": [
         "firoz.safetensors",
-        1.1
+        1.5
       ]
     }
   ],
@@ -865,10 +865,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1,
+      "scale": 0.9090909090909091,
       "offset": [
-        55.51752468217086,
-        50.0800473604811
+        633.1445565324233,
+        -24.51009332192803
       ]
     },
     "groupNodes": {},
