@@ -8,6 +8,7 @@ image = image.pip_install("comfy-cli").run_commands("comfy --skip-prompt install
 image = image.pip_install("insightface", "onnxruntime")
 image = image.run_commands("comfy node install https://github.com/Gourieff/ComfyUI-ReActor")
 image = image.run_commands("comfy node install https://github.com/cubiq/ComfyUI_IPAdapter_plus")
+image = image.run_commands("cd /root/comfy/ComfyUI/custom_nodes && git clone https://github.com/chengzeyi/Comfy-WaveSpeed")
 
 image = image.pip_install("huggingface_hub[hf_transfer]").env({"HF_HUB_ENABLE_HF_TRANSFER": "1"}).run_commands("rm -rf /root/comfy/ComfyUI/models")
 
@@ -38,7 +39,9 @@ def download_models():
     ]
     list(hf_download.starmap(models_to_download))
 
-@app.function(allow_concurrent_inputs=100, concurrency_limit=1, container_idle_timeout=60*20, timeout=60*60*2, gpu="T4", volumes={"/root/comfy/ComfyUI/models": vol})
-@modal.web_server(8188, startup_timeout=60*5)
+MINUTES = 60
+
+@app.function(gpu="T4", allow_concurrent_inputs=10, concurrency_limit=1, container_idle_timeout=10*MINUTES, timeout=60*MINUTES, volumes={"/root/comfy/ComfyUI/models": vol})
+@modal.web_server(8188, startup_timeout=5*MINUTES)
 def ui():
     subprocess.Popen("comfy launch -- --listen", shell=True)
