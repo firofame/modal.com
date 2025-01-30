@@ -17,7 +17,7 @@ image = (
 
 app = App("ai-toolkit", image=image, secrets=[Secret.from_name("huggingface-secret")])
 
-vol = Volume.from_name("hf-cache", create_if_missing=True)
+vol = Volume.from_name("hf-hub-cache", create_if_missing=True)
 
 @app.local_entrypoint()
 def main():
