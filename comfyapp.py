@@ -5,7 +5,8 @@ import os
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("libgl1", "libglib2.0-0", "git")
-    .pip_install("comfy-cli")
+    .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu126")
+    .pip_install("comfy-cli", "onnxruntime-gpu")
     .run_commands("comfy --skip-prompt install --nvidia")
     .run_commands("comfy node install https://github.com/Gourieff/ComfyUI-ReActor")
     .run_commands("comfy node install https://github.com/cubiq/ComfyUI_IPAdapter_plus")
@@ -27,8 +28,8 @@ def hf_download():
     clip_l = hf_hub_download("comfyanonymous/flux_text_encoders", "clip_l.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {clip_l} /root/comfy/ComfyUI/models/clip/clip_l.safetensors", shell=True, check=True)
 
-    t5xxl_fp8_e4m3fn = hf_hub_download("comfyanonymous/flux_text_encoders", "t5xxl_fp8_e4m3fn.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {t5xxl_fp8_e4m3fn} /root/comfy/ComfyUI/models/clip/t5xxl_fp8_e4m3fn.safetensors", shell=True, check=True)
+    t5xxl_fp8_e4m3fn_scaled = hf_hub_download("comfyanonymous/flux_text_encoders", "t5xxl_fp8_e4m3fn_scaled.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {t5xxl_fp8_e4m3fn_scaled} /root/comfy/ComfyUI/models/clip/t5xxl_fp8_e4m3fn_scaled.safetensors", shell=True, check=True)
 
     firoz_lora = hf_hub_download("firofame/firoz", "firoz.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {firoz_lora} /root/comfy/ComfyUI/models/loras/firoz.safetensors", shell=True, check=True)
