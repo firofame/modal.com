@@ -10,7 +10,6 @@ image = (
     .run_commands("comfy node install https://github.com/Gourieff/ComfyUI-ReActor")
     .run_commands("comfy node install https://github.com/cubiq/ComfyUI_IPAdapter_plus")
     .run_commands("comfy node install https://github.com/city96/ComfyUI-GGUF")
-    .run_commands("cd /root/comfy/ComfyUI/custom_nodes && git clone https://github.com/chengzeyi/Comfy-WaveSpeed")
 )
 
 def hf_download():
@@ -18,9 +17,6 @@ def hf_download():
     
     HF_TOKEN=os.environ["HF_TOKEN"]
     login(HF_TOKEN)
-
-    flux_model = hf_hub_download("black-forest-labs/FLUX.1-dev", "flux1-dev.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {flux_model} /root/comfy/ComfyUI/models/diffusion_models/flux1-dev.safetensors", shell=True, check=True)
 
     flux_gguf = hf_hub_download("city96/FLUX.1-dev-gguf", "flux1-dev-Q8_0.gguf", cache_dir="/cache")
     subprocess.run(f"ln -s {flux_gguf} /root/comfy/ComfyUI/models/unet/flux1-dev-Q8_0.gguf", shell=True, check=True)
