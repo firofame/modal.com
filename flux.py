@@ -17,19 +17,22 @@ image = (
     secrets=[modal.Secret.from_name("huggingface-secret")],
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
 )
-def inference(prompt: str) -> bytes:
+def inference() -> bytes:
     from diffusers import FluxPipeline
     import torch
 
     pipe = FluxPipeline.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16, token=os.environ["HF_TOKEN"])
     pipe.load_lora_weights("firofame/firoz", weight_name="firoz.safetensors")
-    img = pipe(prompt=prompt, guidance_scale=3.5, height=512, width=768, num_inference_steps=50).images[0]
+    pipe.fuse_lora(lora_scale=1.1)
+    pipe.to("cuda")
+    prompt = "firofame man"
+    img = pipe(prompt=prompt, guidance_scale=3.5, height=768, width=512, num_inference_steps=30).images[0]
     byte_stream = BytesIO()
     img.save(byte_stream, format="PNG")
     return byte_stream.getvalue()
 
 @app.local_entrypoint()
-def main(prompt: str = "firofame man"):
-    image_bytes = inference.remote(prompt)
+def main():
+    image_bytes = inference.remote()
     output_path = Path("./output.png")
     output_path.write_bytes(image_bytes)
