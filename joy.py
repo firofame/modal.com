@@ -1,11 +1,12 @@
 import modal
 import json
+import os
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install("torch", "torchvision", "torchaudio", pre=True, index_url="https://download.pytorch.org/whl/nightly/cu126")
     .pip_install("accelerate", "transformers", "Pillow")
-    .add_local_file("output.png", remote_path="/output.png", copy=True)
+    .add_local_dir("data", remote_path="/data", copy=True) # Changed to add_local_dir
     .pip_install("huggingface_hub[hf_transfer]")
     .env({"HF_DATASETS_TRUST_REMOTE_CODE": "1", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
@@ -49,13 +50,23 @@ def generate_caption(image_path: str, name: str, prompt_template: str) -> str:
 
 @app.local_entrypoint()
 def main():
-    image_path = "/output.png"  # Path to your image
-    file_name = "01.png" # Desired file name in metadata
+    local_data_dir = "data"  # Local directory containing images
+    remote_data_dir = "/data" # Remote directory where images will be copied
     name = "NirmalaSitharaman"
     prompt_template = "Write a long descriptive caption for this image in a formal tone. If there is a person/character in the image you must refer to them as {name}."
-    caption = generate_caption.remote(image_path, name, prompt_template)
 
-    metadata = {"file_name": file_name, "prompt": caption}
+    metadata_entries = []
+
+    for filename in os.listdir(local_data_dir):
+        if filename.endswith((".png", ".jpg", ".jpeg")):  # Add other image extensions if needed
+            local_image_path = os.path.join(local_data_dir, filename)
+            remote_image_path = os.path.join(remote_data_dir, filename) 
+            
+            caption = generate_caption.remote(remote_image_path, name, prompt_template) # Use remote path
+
+            metadata_entries.append({"file_name": filename, "prompt": caption})
 
     with open("metadata.jsonl", "w") as f:
-        json.dump(metadata, f)
+        for entry in metadata_entries:
+            json.dump(entry, f)
+            f.write("\n")
