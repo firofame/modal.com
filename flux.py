@@ -3,20 +3,17 @@ import os
 from io import BytesIO
 from pathlib import Path
 
-app = modal.App("flux-modal")
-
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .pip_install("sentencepiece", "peft", "transformers", "diffusers[torch]", "huggingface_hub[hf_transfer]")
     .env({"HF_DATASETS_TRUST_REMOTE_CODE": "1", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
-@app.function(
-    gpu="L40s",
-    image=image,
-    secrets=[modal.Secret.from_name("huggingface-secret")],
-    volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
-)
+app = modal.App(name="flux", image=image, secrets=[modal.Secret.from_name("huggingface-secret")])
+
+vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
+
+@app.function(gpu="L40s", volumes={"/cache": vol})
 def inference() -> bytes:
     from diffusers import AutoPipelineForText2Image
     import torch
