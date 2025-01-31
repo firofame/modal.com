@@ -1,4 +1,5 @@
 import modal
+import json
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
@@ -14,7 +15,7 @@ app = modal.App(name="joy-caption", image=image, secrets=[modal.Secret.from_name
 vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 
 @app.function(image=image, gpu="L4", volumes={"/cache": vol})
-def generate_caption() -> str:
+def generate_caption(image_path: str, name: str, prompt_template: str) -> str:
     import torch
     from PIL import Image
     from transformers import AutoProcessor, LlavaForConditionalGeneration
@@ -26,9 +27,9 @@ def generate_caption() -> str:
     llava_model.eval()
 
     with torch.no_grad():
-        image = Image.open("/output.png")
-        name = "NirmalaSitharaman"
-        prompt = f"Write a long descriptive caption for this image in a formal tone. If there is a person/character in the image you must refer to them as {name}."
+        image = Image.open(image_path)
+        
+        prompt = prompt_template.format(name=name)
 
         convo = [{"role": "system", "content": "You are a helpful image captioner."}, {"role": "user", "content": prompt}]
 
@@ -48,6 +49,13 @@ def generate_caption() -> str:
 
 @app.local_entrypoint()
 def main():
-    caption = generate_caption.remote()
-    with open("output.txt", "w") as f:
-        f.write(caption)
+    image_path = "/output.png"  # Path to your image
+    file_name = "01.png" # Desired file name in metadata
+    name = "NirmalaSitharaman"
+    prompt_template = "Write a long descriptive caption for this image in a formal tone. If there is a person/character in the image you must refer to them as {name}."
+    caption = generate_caption.remote(image_path, name, prompt_template)
+
+    metadata = {"file_name": file_name, "prompt": caption}
+
+    with open("metadata.jsonl", "w") as f:
+        json.dump(metadata, f)
