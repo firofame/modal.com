@@ -15,10 +15,13 @@ vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 
 @app.function(gpu="L40s", volumes={"/cache": vol})
 def inference() -> bytes:
+    from huggingface_hub import login
+    login(os.environ["HF_TOKEN"])
+
     from diffusers import AutoPipelineForText2Image
     import torch
 
-    pipe = AutoPipelineForText2Image.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16, token=os.environ["HF_TOKEN"])
+    pipe = AutoPipelineForText2Image.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16)
     pipe.load_lora_weights("firofame/firoz", weight_name="firoz.safetensors")
     pipe.fuse_lora(lora_scale=1.1)
     pipe.to("cuda")
