@@ -18,15 +18,16 @@ app = modal.App(name="train", image=image, secrets=[modal.Secret.from_name("hugg
 
 vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 
-@app.function(gpu="L40s", volumes={"/cache": vol}, timeout=60*30)
+@app.function(gpu="H100", volumes={"/cache": vol}, timeout=60*30)
 def train_lora():
     from huggingface_hub import login
     login(os.environ["HF_TOKEN"])
 
-    subprocess.run(["accelerate config default"], shell=True, check=True)
-    subprocess.run(["accelerate env"], shell=True, check=True)
+    subprocess.run(["rm -f /cache/accelerate/default_config.yaml"], shell=True, check=True)
+    from accelerate.utils import write_basic_config
+    write_basic_config(mixed_precision="bf16")
 
-    LORA_NAME = "firofame"
+    LORA_NAME = "NirmalaSitharaman"
 
     subprocess.run([
         "accelerate", "launch", "train_dreambooth_lora_flux.py",
@@ -35,17 +36,15 @@ def train_lora():
         "--caption_column=prompt",
         "--output_dir", LORA_NAME,
         "--mixed_precision", "bf16",
-        "--instance_prompt", "a photo of firofame man",
+        "--instance_prompt", "NirmalaSitharaman woman",
         "--resolution", "512",
-        "--train_batch_size", "1",
-        "--guidance_scale", "1",
-        "--gradient_accumulation_steps", "4",
-        "--gradient_checkpointing",
+        "--train_batch_size", "5",
+        "--gradient_accumulation_steps", "1",
         "--optimizer", "prodigy",
         "--learning_rate", "1.",
         "--lr_scheduler", "constant",
         "--lr_warmup_steps", "0",
-        "--max_train_steps", "500",
+        "--max_train_steps", "1000",
         "--push_to_hub"
     ], check=True)
 

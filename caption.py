@@ -1,6 +1,7 @@
 import modal
 import subprocess
 import os
+import json
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
@@ -16,20 +17,31 @@ app = modal.App(name="train", image=image, secrets=[modal.Secret.from_name("hugg
 
 vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 
-@app.function(gpu="L4", volumes={"/cache": vol}, timeout=60*30)
+@app.function(gpu="L4", volumes={"/cache": vol})
 def run_caption():
+    name = "NirmalaSitharaman"
 
     os.chdir("/root")
-    # subprocess.run("ls ../data", shell=True)
     subprocess.run([
-        "python", 
-        "batch-caption.py", 
-        "--glob",
-        "../data/*.png",  # Changed the glob pattern to match only .png files
-        "--prompt", 
-        "Write a descriptive caption for this image in a formal tone."
-    ], shell=False, check=True) 
+        "python", "batch-caption.py",
+        "--glob", "../data/*.png",
+        "--batch-size", "2",
+        "--prompt", f"Write a descriptive caption for this image in a formal tone. If there is a person/character in the image you must refer to them as {name}."
+    ], shell=False, check=True)
+
+    metadata = []
+    for filename in os.listdir("/data"):
+        if filename.endswith(".txt"):
+            image_filename = filename.replace(".txt", ".png")
+            with open(os.path.join("/data", filename), "r") as f:
+                prompt = f.read().strip()
+            metadata.append({"file_name": image_filename, "prompt": prompt})
+
+    return metadata
 
 @app.local_entrypoint()
 def main():
-    run_caption.remote()
+    metadata = run_caption.remote()
+    with open("data/metadata.jsonl", "w") as f:
+        for item in metadata:
+            f.write(json.dumps(item) + "\n")
