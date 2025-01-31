@@ -19,17 +19,27 @@ vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 def generate_caption(image_path: str, name: str, prompt_template: str) -> str:
     import torch
     from PIL import Image
-    from transformers import AutoProcessor, LlavaForConditionalGeneration
+    from transformers import AutoProcessor, LlavaForConditionalGeneration, AutoTokenizer, PreTrainedTokenizer, PreTrainedTokenizerFast
+    import torchvision.transforms.functional as TVF
 
     model_name = "fancyfeast/llama-joycaption-alpha-two-hf-llava"
 
-    processor = AutoProcessor.from_pretrained(model_name)
-    llava_model = LlavaForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.bfloat16, device_map="auto")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    assert isinstance(tokenizer, PreTrainedTokenizer) or isinstance(tokenizer, PreTrainedTokenizerFast), f"Tokenizer is of type {type(tokenizer)}"
+    llava_model = LlavaForConditionalGeneration.from_pretrained(model_name, torch_dtype=torch.bfloat16)
+
+    llava_model.tie_weights()
+
+    llava_model = llava_model.to("cuda")
+
+    assert isinstance(llava_model, LlavaForConditionalGeneration)
+
+    processor = AutoProcessor.from_pretrained(model_name, use_fast=True) # Use fast processor
     llava_model.eval()
 
     with torch.no_grad():
         image = Image.open(image_path)
-        
+
         prompt = prompt_template.format(name=name)
 
         convo = [{"role": "system", "content": "You are a helpful image captioner."}, {"role": "user", "content": prompt}]
@@ -38,7 +48,18 @@ def generate_caption(image_path: str, name: str, prompt_template: str) -> str:
         assert isinstance(convo_string, str)
 
         inputs = processor(text=[convo_string], images=[image], return_tensors="pt").to("cuda")
-        inputs["pixel_values"] = inputs["pixel_values"].to(torch.bfloat16)
+
+        vision_device = llava_model.vision_tower.vision_model.embeddings.patch_embedding.weight.device
+        language_device = llava_model.language_model.get_input_embeddings().weight.device
+
+        # Move to GPU
+        pixel_values = inputs["pixel_values"].to(vision_device, non_blocking=True)
+        input_ids = inputs["input_ids"].to(language_device, non_blocking=True)
+        attention_mask = inputs["attention_mask"].to(language_device, non_blocking=True)
+
+        inputs["pixel_values"] = pixel_values
+        inputs["input_ids"] = input_ids
+        inputs["attention_mask"] = attention_mask
 
         generate_ids = llava_model.generate(**inputs, max_new_tokens=300, do_sample=True, suppress_tokens=None, use_cache=True, temperature=0.6, top_k=None, top_p=0.9)[0]
 
@@ -66,7 +87,7 @@ def main():
 
             metadata_entries.append({"file_name": filename, "prompt": caption})
 
-    with open("metadata.jsonl", "w") as f:
+    with open("data/metadata.jsonl", "w") as f:
         for entry in metadata_entries:
             json.dump(entry, f)
             f.write("\n")
