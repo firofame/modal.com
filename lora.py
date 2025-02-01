@@ -20,6 +20,9 @@ vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 
 @app.function(gpu="L40s", volumes={"/cache": vol}, timeout=60*30)
 def train():
+    from accelerate.utils import write_basic_config
+    write_basic_config(mixed_precision="bf16")
+
     sys.path.insert(0, "/root/ai-toolkit")
     from toolkit.job import get_job
     job = get_job("/config.yaml")
