@@ -22,10 +22,10 @@ def inference() -> bytes:
     import torch
 
     pipe = AutoPipelineForText2Image.from_pretrained("black-forest-labs/FLUX.1-dev", torch_dtype=torch.bfloat16)
-    pipe.load_lora_weights("firofame/NirmalaSitharaman", weight_name="pytorch_lora_weights.safetensors")
-    pipe.fuse_lora(lora_scale=1)
+    pipe.load_lora_weights("firofame/manjuw", weight_name="manjuw.safetensors")
+    pipe.fuse_lora(lora_scale=1.1)
     pipe.to("cuda")
-    prompt = "NirmalaSitharaman woman holding a sign that says Flux"
+    prompt = "Photograph of manjuw, A cute woman holding a sign that says Flux"
     img = pipe(prompt=prompt, guidance_scale=3.5, height=768, width=512, num_inference_steps=30).images[0]
     byte_stream = BytesIO()
     img.save(byte_stream, format="PNG")

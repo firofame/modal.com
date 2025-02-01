@@ -19,13 +19,13 @@ vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 
 @app.function(gpu="L4", volumes={"/cache": vol})
 def run_caption():
-    name = "NirmalaSitharaman"
+    name = "manjuw"
 
     os.chdir("/root")
     subprocess.run([
         "python", "batch-caption.py",
         "--glob", "../data/*.png",
-        "--batch-size", "2",
+        "--batch-size", "3",
         "--prompt", f"Write a descriptive caption for this image in a formal tone. If there is a person/character in the image you must refer to them as {name}."
     ], shell=False, check=True)
 
