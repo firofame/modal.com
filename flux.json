@@ -416,41 +416,6 @@
       ]
     },
     {
-      "id": 25,
-      "type": "RandomNoise",
-      "pos": [
-        533.818115234375,
-        -24.727344512939453
-      ],
-      "size": [
-        268.45452880859375,
-        82
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "NOISE",
-          "type": "NOISE",
-          "links": [
-            37
-          ],
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "RandomNoise"
-      },
-      "widgets_values": [
-        82023898438201,
-        "fixed"
-      ],
-      "color": "#2a363b",
-      "bgcolor": "#3f5159"
-    },
-    {
       "id": 30,
       "type": "ModelSamplingFlux",
       "pos": [
@@ -524,7 +489,7 @@
         82.72728729248047
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -564,7 +529,7 @@
         82
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -604,7 +569,7 @@
         58
       ],
       "flags": {},
-      "order": 6,
+      "order": 5,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -698,10 +663,45 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "cute woman"
+        "sexy woman"
       ],
       "color": "#232",
       "bgcolor": "#353"
+    },
+    {
+      "id": 25,
+      "type": "RandomNoise",
+      "pos": [
+        533.818115234375,
+        -24.727344512939453
+      ],
+      "size": [
+        268.45452880859375,
+        82
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            37
+          ],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        958671231339602,
+        "randomize"
+      ],
+      "color": "#2a363b",
+      "bgcolor": "#3f5159"
     }
   ],
   "links": [
@@ -862,10 +862,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.7744022511481573,
+      "scale": 0.7513148009015783,
       "offset": [
-        -70.1305113395285,
-        -171.5204350395713
+        533.2976952355801,
+        74.1455992877627
       ]
     },
     "groupNodes": {},
