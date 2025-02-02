@@ -451,47 +451,6 @@
       "bgcolor": "#3f5159"
     },
     {
-      "id": 6,
-      "type": "CLIPTextEncode",
-      "pos": [
-        48.727264404296875,
-        137.45458984375
-      ],
-      "size": [
-        285.6000061035156,
-        76
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "clip",
-          "type": "CLIP",
-          "link": 119
-        }
-      ],
-      "outputs": [
-        {
-          "name": "CONDITIONING",
-          "type": "CONDITIONING",
-          "links": [
-            41
-          ],
-          "slot_index": 0
-        }
-      ],
-      "title": "CLIP Text Encode (Positive Prompt)",
-      "properties": {
-        "Node name for S&R": "CLIPTextEncode"
-      },
-      "widgets_values": [
-        "manjuw woman"
-      ],
-      "color": "#232",
-      "bgcolor": "#353"
-    },
-    {
       "id": 30,
       "type": "ModelSamplingFlux",
       "pos": [
@@ -634,6 +593,37 @@
       "bgcolor": "#535"
     },
     {
+      "id": 39,
+      "type": "UnetLoaderGGUF",
+      "pos": [
+        -294.8675842285156,
+        516.4452514648438
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            118
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UnetLoaderGGUF"
+      },
+      "widgets_values": [
+        "flux1-dev-Q5_K_S.gguf"
+      ]
+    },
+    {
       "id": 38,
       "type": "LoraLoaderModelOnly",
       "pos": [
@@ -669,39 +659,49 @@
       },
       "widgets_values": [
         "manjuw.safetensors",
-        1
+        1.4000000000000001
       ]
     },
     {
-      "id": 39,
-      "type": "UnetLoaderGGUF",
+      "id": 6,
+      "type": "CLIPTextEncode",
       "pos": [
-        -294.8675842285156,
-        516.4452514648438
+        48.727264404296875,
+        137.45458984375
       ],
       "size": [
-        315,
-        58
+        285.6000061035156,
+        76
       ],
       "flags": {},
-      "order": 6,
+      "order": 7,
       "mode": 0,
-      "inputs": [],
-      "outputs": [
+      "inputs": [
         {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            118
-          ]
+          "name": "clip",
+          "type": "CLIP",
+          "link": 119
         }
       ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            41
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
       "properties": {
-        "Node name for S&R": "UnetLoaderGGUF"
+        "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "flux1-dev-Q5_K_S.gguf"
-      ]
+        "cute woman"
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
     }
   ],
   "links": [
@@ -862,10 +862,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.6209213230591553,
+      "scale": 0.7744022511481573,
       "offset": [
-        651.5751772424169,
-        178.84822340336353
+        -70.1305113395285,
+        -171.5204350395713
       ]
     },
     "groupNodes": {},
