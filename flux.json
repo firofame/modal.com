@@ -156,7 +156,7 @@
         46
       ],
       "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
@@ -200,7 +200,7 @@
         58
       ],
       "flags": {},
-      "order": 10,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -230,72 +230,6 @@
       "bgcolor": "#355"
     },
     {
-      "id": 40,
-      "type": "DualCLIPLoaderGGUF",
-      "pos": [
-        -324.1839599609375,
-        135.89260864257812
-      ],
-      "size": [
-        339.0000305175781,
-        106
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            119
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "DualCLIPLoaderGGUF"
-      },
-      "widgets_values": [
-        "t5-v1_1-xxl-encoder-Q5_K_M.gguf",
-        "clip_l.safetensors",
-        "flux"
-      ]
-    },
-    {
-      "id": 16,
-      "type": "KSamplerSelect",
-      "pos": [
-        599.2726440429688,
-        239.27272033691406
-      ],
-      "size": [
-        210,
-        58
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "SAMPLER",
-          "type": "SAMPLER",
-          "links": [
-            19
-          ],
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "KSamplerSelect"
-      },
-      "widgets_values": [
-        "euler"
-      ]
-    },
-    {
       "id": 17,
       "type": "BasicScheduler",
       "pos": [
@@ -307,7 +241,7 @@
         106
       ],
       "flags": {},
-      "order": 13,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
@@ -348,7 +282,7 @@
         78
       ],
       "flags": {},
-      "order": 8,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -427,7 +361,7 @@
         122
       ],
       "flags": {},
-      "order": 11,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -489,7 +423,7 @@
         82.72728729248047
       ],
       "flags": {},
-      "order": 3,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -529,7 +463,7 @@
         82
       ],
       "flags": {},
-      "order": 4,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -558,18 +492,53 @@
       "bgcolor": "#535"
     },
     {
+      "id": 25,
+      "type": "RandomNoise",
+      "pos": [
+        533.818115234375,
+        -24.727344512939453
+      ],
+      "size": [
+        268.45452880859375,
+        82
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            37
+          ],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        155952024614379,
+        "randomize"
+      ],
+      "color": "#2a363b",
+      "bgcolor": "#3f5159"
+    },
+    {
       "id": 39,
       "type": "UnetLoaderGGUF",
       "pos": [
-        -294.8675842285156,
-        516.4452514648438
+        -520.101806640625,
+        368.15338134765625
       ],
       "size": [
-        315,
+        262.1200256347656,
         58
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -585,46 +554,73 @@
         "Node name for S&R": "UnetLoaderGGUF"
       },
       "widgets_values": [
-        "flux1-dev-Q5_K_S.gguf"
+        "flux1-dev-Q8_0.gguf"
       ]
     },
     {
-      "id": 38,
-      "type": "LoraLoaderModelOnly",
+      "id": 40,
+      "type": "DualCLIPLoaderGGUF",
       "pos": [
-        -228.87515258789062,
-        367.8563537597656
+        -310.4056396484375,
+        138.00552368164062
       ],
       "size": [
-        257.5454406738281,
-        82
+        319.3480529785156,
+        106
       ],
       "flags": {},
-      "order": 9,
+      "order": 5,
       "mode": 0,
-      "inputs": [
-        {
-          "name": "model",
-          "type": "MODEL",
-          "link": 118
-        }
-      ],
+      "inputs": [],
       "outputs": [
         {
-          "name": "MODEL",
-          "type": "MODEL",
+          "name": "CLIP",
+          "type": "CLIP",
           "links": [
-            117
+            119
           ],
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "LoraLoaderModelOnly"
+        "Node name for S&R": "DualCLIPLoaderGGUF"
       },
       "widgets_values": [
-        "manjuw.safetensors",
-        1.4000000000000001
+        "t5-v1_1-xxl-encoder-Q8_0.gguf",
+        "clip_l.safetensors",
+        "flux"
+      ]
+    },
+    {
+      "id": 16,
+      "type": "KSamplerSelect",
+      "pos": [
+        599.2726440429688,
+        239.27272033691406
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            19
+          ],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
       ]
     },
     {
@@ -639,7 +635,7 @@
         76
       ],
       "flags": {},
-      "order": 7,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
@@ -663,45 +659,49 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "sexy woman"
+        "cute woman"
       ],
       "color": "#232",
       "bgcolor": "#353"
     },
     {
-      "id": 25,
-      "type": "RandomNoise",
+      "id": 38,
+      "type": "LoraLoaderModelOnly",
       "pos": [
-        533.818115234375,
-        -24.727344512939453
+        -228.87515258789062,
+        367.8563537597656
       ],
       "size": [
-        268.45452880859375,
+        257.5454406738281,
         82
       ],
       "flags": {},
-      "order": 6,
+      "order": 8,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 118
+        }
+      ],
       "outputs": [
         {
-          "name": "NOISE",
-          "type": "NOISE",
+          "name": "MODEL",
+          "type": "MODEL",
           "links": [
-            37
+            117
           ],
-          "shape": 3
+          "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "RandomNoise"
+        "Node name for S&R": "LoraLoaderModelOnly"
       },
       "widgets_values": [
-        958671231339602,
-        "randomize"
-      ],
-      "color": "#2a363b",
-      "bgcolor": "#3f5159"
+        "manjuw.safetensors",
+        1.2
+      ]
     }
   ],
   "links": [
@@ -862,10 +862,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.7513148009015783,
+      "scale": 1,
       "offset": [
-        533.2976952355801,
-        74.1455992877627
+        -111.56417596362849,
+        -125.53680540243093
       ]
     },
     "groupNodes": {},
