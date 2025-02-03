@@ -3,80 +3,6 @@
   "last_link_id": 119,
   "nodes": [
     {
-      "id": 8,
-      "type": "VAEDecode",
-      "pos": [
-        1179.4544677734375,
-        193.9091339111328
-      ],
-      "size": [
-        140,
-        46
-      ],
-      "flags": {},
-      "order": 15,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "samples",
-          "type": "LATENT",
-          "link": 24
-        },
-        {
-          "name": "vae",
-          "type": "VAE",
-          "link": 12
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            9
-          ],
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "VAEDecode"
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 10,
-      "type": "VAELoader",
-      "pos": [
-        916.36376953125,
-        381.0909118652344
-      ],
-      "size": [
-        228.1799774169922,
-        58
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "VAE",
-          "type": "VAE",
-          "links": [
-            12
-          ],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "VAELoader"
-      },
-      "widgets_values": [
-        "ae.safetensors"
-      ]
-    },
-    {
       "id": 13,
       "type": "SamplerCustomAdvanced",
       "pos": [
@@ -156,7 +82,7 @@
         46
       ],
       "flags": {},
-      "order": 13,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
@@ -200,7 +126,7 @@
         58
       ],
       "flags": {},
-      "order": 11,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -241,7 +167,7 @@
         106
       ],
       "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
@@ -282,7 +208,7 @@
         78
       ],
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -323,45 +249,152 @@
       ]
     },
     {
-      "id": 9,
-      "type": "SaveImage",
+      "id": 25,
+      "type": "RandomNoise",
       "pos": [
-        1365.9088134765625,
-        195.9999542236328
+        533.818115234375,
+        -24.727344512939453
       ],
       "size": [
-        521.8609008789062,
-        816.6160278320312
+        268.45452880859375,
+        82
       ],
       "flags": {},
-      "order": 16,
+      "order": 0,
       "mode": 0,
-      "inputs": [
+      "inputs": [],
+      "outputs": [
         {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 9
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            37
+          ],
+          "shape": 3
         }
       ],
-      "outputs": [],
-      "properties": {},
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
       "widgets_values": [
-        "ComfyUI"
+        528838380703481,
+        "randomize"
+      ],
+      "color": "#2a363b",
+      "bgcolor": "#3f5159"
+    },
+    {
+      "id": 40,
+      "type": "DualCLIPLoaderGGUF",
+      "pos": [
+        -310.4056396484375,
+        138.00552368164062
+      ],
+      "size": [
+        319.3480529785156,
+        106
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            119
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DualCLIPLoaderGGUF"
+      },
+      "widgets_values": [
+        "t5-v1_1-xxl-encoder-Q8_0.gguf",
+        "clip_l.safetensors",
+        "flux"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "VAELoader",
+      "pos": [
+        902.7758178710938,
+        367.5545959472656
+      ],
+      "size": [
+        228.1799774169922,
+        58
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            12
+          ],
+          "slot_index": 0,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "ae.safetensors"
+      ]
+    },
+    {
+      "id": 16,
+      "type": "KSamplerSelect",
+      "pos": [
+        599.44287109375,
+        236.6753692626953
+      ],
+      "size": [
+        210,
+        58
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            19
+          ],
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
       ]
     },
     {
       "id": 30,
       "type": "ModelSamplingFlux",
       "pos": [
-        344.4075012207031,
-        362.2979736328125
+        349.5818176269531,
+        279.5970764160156
       ],
       "size": [
         210,
         122
       ],
       "flags": {},
-      "order": 10,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -415,15 +448,15 @@
       "id": 34,
       "type": "PrimitiveNode",
       "pos": [
-        53.199954986572266,
-        381.0543518066406
+        48.70675277709961,
+        294.5382385253906
       ],
       "size": [
         242.00001525878906,
         82.72728729248047
       ],
       "flags": {},
-      "order": 1,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -455,15 +488,15 @@
       "id": 35,
       "type": "PrimitiveNode",
       "pos": [
-        56.26176452636719,
-        564.3997802734375
+        56.431983947753906,
+        561.282958984375
       ],
       "size": [
         240.54542541503906,
         82
       ],
       "flags": {},
-      "order": 2,
+      "order": 5,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -492,53 +525,18 @@
       "bgcolor": "#535"
     },
     {
-      "id": 25,
-      "type": "RandomNoise",
-      "pos": [
-        533.818115234375,
-        -24.727344512939453
-      ],
-      "size": [
-        268.45452880859375,
-        82
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "NOISE",
-          "type": "NOISE",
-          "links": [
-            37
-          ],
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "RandomNoise"
-      },
-      "widgets_values": [
-        155952024614379,
-        "randomize"
-      ],
-      "color": "#2a363b",
-      "bgcolor": "#3f5159"
-    },
-    {
       "id": 39,
       "type": "UnetLoaderGGUF",
       "pos": [
-        -520.101806640625,
-        368.15338134765625
+        -252.66297912597656,
+        429.711181640625
       ],
       "size": [
         262.1200256347656,
         58
       ],
       "flags": {},
-      "order": 4,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -558,69 +556,71 @@
       ]
     },
     {
-      "id": 40,
-      "type": "DualCLIPLoaderGGUF",
+      "id": 8,
+      "type": "VAEDecode",
       "pos": [
-        -310.4056396484375,
-        138.00552368164062
+        1174.3118896484375,
+        196.9049835205078
       ],
       "size": [
-        319.3480529785156,
-        106
+        140,
+        46
       ],
       "flags": {},
-      "order": 5,
+      "order": 15,
       "mode": 0,
-      "inputs": [],
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 24
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 12
+        }
+      ],
       "outputs": [
         {
-          "name": "CLIP",
-          "type": "CLIP",
+          "name": "IMAGE",
+          "type": "IMAGE",
           "links": [
-            119
+            9
           ],
           "slot_index": 0
         }
       ],
       "properties": {
-        "Node name for S&R": "DualCLIPLoaderGGUF"
+        "Node name for S&R": "VAEDecode"
       },
-      "widgets_values": [
-        "t5-v1_1-xxl-encoder-Q8_0.gguf",
-        "clip_l.safetensors",
-        "flux"
-      ]
+      "widgets_values": []
     },
     {
-      "id": 16,
-      "type": "KSamplerSelect",
+      "id": 9,
+      "type": "SaveImage",
       "pos": [
-        599.2726440429688,
-        239.27272033691406
+        1360.7662353515625,
+        196.71658325195312
       ],
       "size": [
-        210,
-        58
+        521.8609008789062,
+        816.6160278320312
       ],
       "flags": {},
-      "order": 6,
+      "order": 16,
       "mode": 0,
-      "inputs": [],
-      "outputs": [
+      "inputs": [
         {
-          "name": "SAMPLER",
-          "type": "SAMPLER",
-          "links": [
-            19
-          ],
-          "shape": 3
+          "name": "images",
+          "type": "IMAGE",
+          "link": 9
         }
       ],
-      "properties": {
-        "Node name for S&R": "KSamplerSelect"
-      },
+      "outputs": [],
+      "properties": {},
       "widgets_values": [
-        "euler"
+        "ComfyUI"
       ]
     },
     {
@@ -635,7 +635,7 @@
         76
       ],
       "flags": {},
-      "order": 9,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -659,7 +659,7 @@
         "Node name for S&R": "CLIPTextEncode"
       },
       "widgets_values": [
-        "cute woman"
+        "cute woman holding a sign \"r/Trivandrum\""
       ],
       "color": "#232",
       "bgcolor": "#353"
@@ -668,15 +668,15 @@
       "id": 38,
       "type": "LoraLoaderModelOnly",
       "pos": [
-        -228.87515258789062,
-        367.8563537597656
+        33.83849334716797,
+        427.7823181152344
       ],
       "size": [
         257.5454406738281,
         82
       ],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
@@ -700,7 +700,7 @@
       },
       "widgets_values": [
         "manjuw.safetensors",
-        1.2
+        1.3
       ]
     }
   ],
@@ -864,8 +864,8 @@
     "ds": {
       "scale": 1,
       "offset": [
-        -111.56417596362849,
-        -125.53680540243093
+        -110.09223773544198,
+        -161.42283445748157
       ]
     },
     "groupNodes": {},
