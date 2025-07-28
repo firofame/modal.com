@@ -17,6 +17,12 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
+    RealESRGAN_x2 = hf_hub_download(repo_id="ai-forever/Real-ESRGAN", filename="RealESRGAN_x2.pth", cache_dir="/cache")
+    subprocess.run(f"ln -s {RealESRGAN_x2} /root/comfy/ComfyUI/models/upscale_models/RealESRGAN_x2.pth", shell=True, check=True)
+
+    Realistic_Vision_V5 = hf_hub_download(repo_id="SG161222/Realistic_Vision_V5.1_noVAE", filename="Realistic_Vision_V5.1.ckpt", cache_dir="/cache")
+    subprocess.run(f"ln -s {Realistic_Vision_V5} /root/comfy/ComfyUI/models/checkpoints/Realistic_Vision_V5.1.ckpt", shell=True, check=True)
+
     dev = hf_hub_download(repo_id="black-forest-labs/FLUX.1-dev", filename="flux1-dev.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {dev} /root/comfy/ComfyUI/models/diffusion_models/flux1-dev.safetensors", shell=True, check=True)
 
