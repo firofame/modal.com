@@ -11,7 +11,7 @@ image = (
     .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli")
     .run_commands("comfy --skip-prompt install --fast-deps --nvidia")
     .run_commands("comfy node install --fast-deps ComfyUI-Manager")
-    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1"})
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
 def hf_download():
