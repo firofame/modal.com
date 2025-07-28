@@ -17,6 +17,12 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
+    firoz = hf_hub_download(repo_id="firofame/firoz", filename="firoz.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {firoz} /root/comfy/ComfyUI/models/loras/firoz.safetensors", shell=True, check=True)
+
+    manjuw = hf_hub_download(repo_id="firofame/manjuw", filename="manjuw.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {manjuw} /root/comfy/ComfyUI/models/loras/manjuw.safetensors", shell=True, check=True)
+
     RealESRGAN_x2 = hf_hub_download(repo_id="ai-forever/Real-ESRGAN", filename="RealESRGAN_x2.pth", cache_dir="/cache")
     subprocess.run(f"ln -s {RealESRGAN_x2} /root/comfy/ComfyUI/models/upscale_models/RealESRGAN_x2.pth", shell=True, check=True)
 
