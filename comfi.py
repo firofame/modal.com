@@ -2,6 +2,8 @@ from pathlib import Path
 import subprocess
 import modal
 
+# https://comfyanonymous.github.io/ComfyUI_examples/
+
 image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
     .entrypoint([])
@@ -14,6 +16,12 @@ image = (
 
 def hf_download():
     from huggingface_hub import hf_hub_download
+
+    dev = hf_hub_download(repo_id="black-forest-labs/FLUX.1-dev", filename="flux1-dev.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {dev} /root/comfy/ComfyUI/models/diffusion_models/flux1-dev.safetensors", shell=True, check=True)
+
+    fill = hf_hub_download(repo_id="black-forest-labs/FLUX.1-Fill-dev", filename="flux1-fill-dev.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {fill} /root/comfy/ComfyUI/models/diffusion_models/flux1-fill-dev.safetensors", shell=True, check=True)
 
     kontext = hf_hub_download(repo_id="black-forest-labs/FLUX.1-Kontext-dev", filename="flux1-kontext-dev.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {kontext} /root/comfy/ComfyUI/models/diffusion_models/flux1-kontext-dev.safetensors", shell=True, check=True)
