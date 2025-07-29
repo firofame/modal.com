@@ -7,10 +7,14 @@ import modal
 image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
     .entrypoint([])
-    .apt_install("git")
+    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
     .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli")
+    .env({"CC": "gcc", "CXX": "g++"}) # Install insightface with explicit compiler environment variables
+    .uv_pip_install("insightface==0.7.3")
     .run_commands("comfy --skip-prompt install --fast-deps --nvidia")
     .run_commands("comfy node install ComfyUI-Manager")
+    .run_commands("comfy node install ComfyUI-Crystools")
+    .run_commands("comfy node install comfyui-reactor")
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
