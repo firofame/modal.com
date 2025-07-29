@@ -2,7 +2,7 @@ from pathlib import Path
 import subprocess
 import modal
 
-# https://comfyanonymous.github.io/ComfyUI_examples/
+# https://registry.comfy.org/
 
 image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
@@ -10,7 +10,7 @@ image = (
     .apt_install("git")
     .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli")
     .run_commands("comfy --skip-prompt install --fast-deps --nvidia")
-    .run_commands("comfy node install --fast-deps ComfyUI-Manager")
+    .run_commands("comfy node install ComfyUI-Manager")
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
@@ -26,8 +26,14 @@ def hf_download():
     RealESRGAN_x2 = hf_hub_download(repo_id="ai-forever/Real-ESRGAN", filename="RealESRGAN_x2.pth", cache_dir="/cache")
     subprocess.run(f"ln -s {RealESRGAN_x2} /root/comfy/ComfyUI/models/upscale_models/RealESRGAN_x2.pth", shell=True, check=True)
 
+    CyberRealisticXLPlay_V5 = hf_hub_download(repo_id="cyberdelia/CyberRealisticXL", filename="CyberRealisticXLPlay_V5.8.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {CyberRealisticXLPlay_V5} /root/comfy/ComfyUI/models/checkpoints/CyberRealisticXLPlay_V5.8.safetensors", shell=True, check=True)
+
     Realistic_Vision_V5 = hf_hub_download(repo_id="SG161222/Realistic_Vision_V5.1_noVAE", filename="Realistic_Vision_V5.1.ckpt", cache_dir="/cache")
     subprocess.run(f"ln -s {Realistic_Vision_V5} /root/comfy/ComfyUI/models/checkpoints/Realistic_Vision_V5.1.ckpt", shell=True, check=True)
+
+    Realistic_Vision_V5_inpainting = hf_hub_download(repo_id="SG161222/Realistic_Vision_V5.1_noVAE", filename="Realistic_Vision_V5.1-inpainting.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {Realistic_Vision_V5_inpainting} /root/comfy/ComfyUI/models/checkpoints/Realistic_Vision_V5.1-inpainting.safetensors", shell=True, check=True)
 
     dev = hf_hub_download(repo_id="black-forest-labs/FLUX.1-dev", filename="flux1-dev.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {dev} /root/comfy/ComfyUI/models/diffusion_models/flux1-dev.safetensors", shell=True, check=True)
