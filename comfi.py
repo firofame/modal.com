@@ -21,6 +21,19 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
+    Path("/root/comfy/ComfyUI/models/facerestore_models").mkdir(parents=True, exist_ok=True)
+    GPEN512 = hf_hub_download(repo_id="martintomov/comfy", filename="facerestore_models/GPEN-BFR-512.onnx", cache_dir="/cache")
+    subprocess.run(f"ln -s {GPEN512} /root/comfy/ComfyUI/models/facerestore_models/GPEN-BFR-512.onnx", shell=True, check=True)
+
+    codeformer = hf_hub_download(repo_id="martintomov/comfy", filename="facerestore_models/codeformer.pth", cache_dir="/cache")
+    subprocess.run(f"ln -s {codeformer} /root/comfy/ComfyUI/models/facerestore_models/codeformer.pth", shell=True, check=True)
+
+    GFPGANv14 = hf_hub_download(repo_id="martintomov/comfy", filename="facerestore_models/GFPGANv1.4.pth", cache_dir="/cache")
+    subprocess.run(f"ln -s {GFPGANv14} /root/comfy/ComfyUI/models/facerestore_models/GFPGANv1.4.pth", shell=True, check=True)
+
+    GFPGANv13 = hf_hub_download(repo_id="martintomov/comfy", filename="facerestore_models/GFPGANv1.3.pth", cache_dir="/cache")
+    subprocess.run(f"ln -s {GFPGANv13} /root/comfy/ComfyUI/models/facerestore_models/GFPGANv1.3.pth", shell=True, check=True)
+
     Path("/root/comfy/ComfyUI/models/ipadapter").mkdir(parents=True, exist_ok=True)
     plusv2_sdxl_ipadapter = hf_hub_download(repo_id="h94/IP-Adapter-FaceID", filename="ip-adapter-faceid-plusv2_sdxl.bin", cache_dir="/cache")
     subprocess.run(f"ln -s {plusv2_sdxl_ipadapter} /root/comfy/ComfyUI/models/ipadapter/ip-adapter-faceid-plusv2_sdxl.bin", shell=True, check=True)
