@@ -10,16 +10,29 @@ image = (
     .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
     .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli")
     .env({"CC": "gcc", "CXX": "g++"}) # Install insightface with explicit compiler environment variables
-    .uv_pip_install("insightface==0.7.3")
     .run_commands("comfy --skip-prompt install --fast-deps --nvidia")
     .run_commands("comfy node install ComfyUI-Manager")
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-reactor")
+    .run_commands("comfy node install comfyui_ipadapter_plus")
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
 def hf_download():
     from huggingface_hub import hf_hub_download
+
+    Path("/root/comfy/ComfyUI/models/ipadapter").mkdir(parents=True, exist_ok=True)
+    plusv2_sdxl_ipadapter = hf_hub_download(repo_id="h94/IP-Adapter-FaceID", filename="ip-adapter-faceid-plusv2_sdxl.bin", cache_dir="/cache")
+    subprocess.run(f"ln -s {plusv2_sdxl_ipadapter} /root/comfy/ComfyUI/models/ipadapter/ip-adapter-faceid-plusv2_sdxl.bin", shell=True, check=True)
+
+    plusv2_sdxl_lora = hf_hub_download(repo_id="h94/IP-Adapter-FaceID", filename="ip-adapter-faceid-plusv2_sdxl_lora.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {plusv2_sdxl_lora} /root/comfy/ComfyUI/models/loras/ip-adapter-faceid-plusv2_sdxl_lora.safetensors", shell=True, check=True)
+
+    clip_vit = hf_hub_download(repo_id="h94/IP-Adapter", filename="models/image_encoder/model.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {clip_vit} /root/comfy/ComfyUI/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors", shell=True, check=True)
+
+    SDXL4steps = hf_hub_download(repo_id="ByteDance/Hyper-SD", filename="Hyper-SDXL-4steps-lora.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {SDXL4steps} /root/comfy/ComfyUI/models/loras/Hyper-SDXL-4steps-lora.safetensors", shell=True, check=True)
 
     firoz = hf_hub_download(repo_id="firofame/firoz", filename="firoz.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {firoz} /root/comfy/ComfyUI/models/loras/firoz.safetensors", shell=True, check=True)
@@ -30,8 +43,8 @@ def hf_download():
     RealESRGAN_x2 = hf_hub_download(repo_id="ai-forever/Real-ESRGAN", filename="RealESRGAN_x2.pth", cache_dir="/cache")
     subprocess.run(f"ln -s {RealESRGAN_x2} /root/comfy/ComfyUI/models/upscale_models/RealESRGAN_x2.pth", shell=True, check=True)
 
-    CyberRealisticXLPlay_V5 = hf_hub_download(repo_id="cyberdelia/CyberRealisticXL", filename="CyberRealisticXLPlay_V5.8.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {CyberRealisticXLPlay_V5} /root/comfy/ComfyUI/models/checkpoints/CyberRealisticXLPlay_V5.8.safetensors", shell=True, check=True)
+    CyberRealisticXLPlay_V6 = hf_hub_download(repo_id="cyberdelia/CyberRealisticXL", filename="CyberRealisticXLPlay_V6.0.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {CyberRealisticXLPlay_V6} /root/comfy/ComfyUI/models/checkpoints/CyberRealisticXLPlay_V6.0.safetensors", shell=True, check=True)
 
     Realistic_Vision_V5 = hf_hub_download(repo_id="SG161222/Realistic_Vision_V5.1_noVAE", filename="Realistic_Vision_V5.1.ckpt", cache_dir="/cache")
     subprocess.run(f"ln -s {Realistic_Vision_V5} /root/comfy/ComfyUI/models/checkpoints/Realistic_Vision_V5.1.ckpt", shell=True, check=True)
