@@ -21,6 +21,21 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
+    wan2_2_2_ti2v_5B_fp16 = hf_hub_download(repo_id="Comfy-Org/Wan_2.2_ComfyUI_Repackaged", filename="split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {wan2_2_2_ti2v_5B_fp16} /root/comfy/ComfyUI/models/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors", shell=True, check=True)
+
+    wan_2_2_vae = hf_hub_download(repo_id="Comfy-Org/Wan_2.2_ComfyUI_Repackaged", filename="split_files/vae/wan2.2_vae.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {wan_2_2_vae} /root/comfy/ComfyUI/models/vae/wan2.2_vae.safetensors", shell=True, check=True)
+
+    wan_2_1_vae = hf_hub_download(repo_id="Comfy-Org/Wan_2.2_ComfyUI_Repackaged", filename="split_files/vae/wan_2.1_vae.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {wan_2_1_vae} /root/comfy/ComfyUI/models/vae/wan_2.1_vae.safetensors", shell=True, check=True)
+
+    umt5_xxl_fp16 = hf_hub_download(repo_id="Comfy-Org/Wan_2.2_ComfyUI_Repackaged", filename="split_files/text_encoders/umt5_xxl_fp16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {umt5_xxl_fp16} /root/comfy/ComfyUI/models/text_encoders/umt5_xxl_fp16.safetensors", shell=True, check=True)
+
+    umt5_xxl_fp8_e4m3fn_scaled = hf_hub_download(repo_id="Comfy-Org/Wan_2.2_ComfyUI_Repackaged", filename="split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {umt5_xxl_fp8_e4m3fn_scaled} /root/comfy/ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors", shell=True, check=True)
+
     Path("/root/comfy/ComfyUI/models/facerestore_models").mkdir(parents=True, exist_ok=True)
     GPEN512 = hf_hub_download(repo_id="martintomov/comfy", filename="facerestore_models/GPEN-BFR-512.onnx", cache_dir="/cache")
     subprocess.run(f"ln -s {GPEN512} /root/comfy/ComfyUI/models/facerestore_models/GPEN-BFR-512.onnx", shell=True, check=True)
