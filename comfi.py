@@ -21,6 +21,12 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
+    t5xxl_fp8_e4m3fn_scaled = hf_hub_download(repo_id="comfyanonymous/flux_text_encoders", filename="t5xxl_fp8_e4m3fn_scaled.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {t5xxl_fp8_e4m3fn_scaled} /root/comfy/ComfyUI/models/text_encoders/t5xxl_fp8_e4m3fn_scaled.safetensors", shell=True, check=True)
+
+    kontext_fp8_scaled = hf_hub_download(repo_id="Comfy-Org/flux1-kontext-dev_ComfyUI", filename="split_files/diffusion_models/flux1-dev-kontext_fp8_scaled.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {kontext_fp8_scaled} /root/comfy/ComfyUI/models/diffusion_models/flux1-dev-kontext_fp8_scaled.safetensors", shell=True, check=True)
+
     wan2_2_2_ti2v_5B_fp16 = hf_hub_download(repo_id="Comfy-Org/Wan_2.2_ComfyUI_Repackaged", filename="split_files/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {wan2_2_2_ti2v_5B_fp16} /root/comfy/ComfyUI/models/diffusion_models/wan2.2_ti2v_5B_fp16.safetensors", shell=True, check=True)
 
@@ -104,7 +110,7 @@ image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=secrets
 
 app = modal.App(name="comfy-ui", image=image)
 
-@app.function(max_containers=1, gpu="T4", volumes={"/cache": vol})
+@app.function(max_containers=1, gpu="L4", volumes={"/cache": vol})
 @modal.concurrent(max_inputs=10)
 @modal.web_server(8000, startup_timeout=60)
 def ui():
