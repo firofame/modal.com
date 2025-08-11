@@ -21,6 +21,15 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
+    qwen_image_vae = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/vae/qwen_image_vae.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_vae} /root/comfy/ComfyUI/models/vae/qwen_image_vae.safetensors", shell=True, check=True)
+
+    qwen_2_5_vl_7b_fp8_scaled = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_2_5_vl_7b_fp8_scaled} /root/comfy/ComfyUI/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors", shell=True, check=True)
+
+    qwen_image_fp8_e4m3fn = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/diffusion_models/qwen_image_fp8_e4m3fn.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_fp8_e4m3fn} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_fp8_e4m3fn.safetensors", shell=True, check=True)
+
     t5xxl_fp8_e4m3fn_scaled = hf_hub_download(repo_id="comfyanonymous/flux_text_encoders", filename="t5xxl_fp8_e4m3fn_scaled.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {t5xxl_fp8_e4m3fn_scaled} /root/comfy/ComfyUI/models/text_encoders/t5xxl_fp8_e4m3fn_scaled.safetensors", shell=True, check=True)
 
