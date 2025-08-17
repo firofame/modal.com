@@ -8,7 +8,7 @@ image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
     .entrypoint([])
     .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
-    .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli")
+    .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli")
     .env({"CC": "gcc", "CXX": "g++"}) # Install insightface with explicit compiler environment variables
     .run_commands("comfy --skip-prompt install --fast-deps --nvidia")
     .run_commands("comfy node install ComfyUI-Manager")
@@ -119,7 +119,7 @@ image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=secrets
 
 app = modal.App(name="comfy-ui", image=image)
 
-@app.function(max_containers=1, gpu="L4", volumes={"/cache": vol})
+@app.function(max_containers=1, gpu="L40s", volumes={"/cache": vol})
 @modal.concurrent(max_inputs=10)
 @modal.web_server(8000, startup_timeout=60)
 def ui():
