@@ -1,4 +1,4 @@
-# venv/bin/modal run denoise.py --file-path /Users/firozahmed/Downloads/GDvAHKZR87g.opus
+# venv/bin/modal run denoise.py --file-path /Users/firozahmed/Downloads/audio.ogg
 
 from io import BytesIO
 from pathlib import Path
@@ -57,14 +57,8 @@ class Model:
 def main(file_path: str):
     path = Path(file_path)
     output_bytes = Model().inference.remote(input_bytes = path.read_bytes(), suffix=path.suffix)
-
-    output_path = "/Users/firozahmed/Downloads/output.wav"
     
-    if isinstance(output_path, str):
-        output_path = Path(output_path)
-
-    dir = output_path.parent
-    dir.mkdir(exist_ok=True, parents=True)
-
+    output_path = path.with_stem(f"{path.stem}_denoise").with_suffix(".wav")
+    
     output_path.write_bytes(output_bytes)
     print(f"Enhanced audio saved to {output_path}")
