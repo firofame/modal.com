@@ -27,6 +27,7 @@ app = modal.App("resemble-enhance")
 
 with image.imports():
     import torchaudio
+    from torchaudio.io import CodecConfig
     from resemble_enhance.enhancer.inference import denoise
 
 @app.cls(
@@ -49,7 +50,7 @@ class Model:
             enhanced_wav, new_sr = denoise(dwav, sr, self.device)
 
             buffer = BytesIO()
-            torchaudio.save(buffer, enhanced_wav.unsqueeze(0).cpu(), new_sr, format="opus")
+            torchaudio.save(buffer, enhanced_wav.unsqueeze(0).cpu(), new_sr, format="opus", compression=CodecConfig(bit_rate=32000))
             return buffer.getvalue()
 
 
