@@ -9,7 +9,7 @@ import modal
 image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.11")
     .entrypoint([])
-    .apt_install("git", "git-lfs")
+    .apt_install("git", "git-lfs", "ffmpeg")
     .uv_pip_install("resemble-enhance")
 )
 
@@ -49,16 +49,16 @@ class Model:
             enhanced_wav, new_sr = denoise(dwav, sr, self.device)
 
             buffer = BytesIO()
-            torchaudio.save(buffer, enhanced_wav.unsqueeze(0).cpu(), new_sr, format="wav")
+            torchaudio.save(buffer, enhanced_wav.unsqueeze(0).cpu(), new_sr, format="opus")
             return buffer.getvalue()
 
 
 @app.local_entrypoint()
 def main(file_path: str):
     path = Path(file_path)
-    output_bytes = Model().inference.remote(input_bytes = path.read_bytes(), suffix=path.suffix)
+    output_bytes = Model().inference.remote(input_bytes=path.read_bytes(), suffix=path.suffix)
     
-    output_path = path.with_stem(f"{path.stem}_denoise").with_suffix(".wav")
+    output_path = path.with_stem(f"{path.stem}_denoise").with_suffix(".opus")
     
     output_path.write_bytes(output_bytes)
     print(f"Enhanced audio saved to {output_path}")
