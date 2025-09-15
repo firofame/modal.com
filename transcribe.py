@@ -41,9 +41,6 @@ class Model:
         audio, _ = librosa.load(io.BytesIO(audio_bytes), sr=16000)
         result = self.model.transcribe(audio, batch_size=16)
 
-        # model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=device)
-        # result = whisperx.align(result["segments"], model_a, metadata, audio, device, return_char_alignments=False)
-
         return result["segments"]
 
 
