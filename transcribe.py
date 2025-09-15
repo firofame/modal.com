@@ -17,6 +17,9 @@ device = "cuda"
 
 with image.imports():
     import whisperx
+    
+    import warnings
+    warnings.filterwarnings("ignore", category=UserWarning)
 
 @app.cls(
     gpu="L40s",
