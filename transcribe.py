@@ -36,10 +36,10 @@ class Model:
         import io
         import librosa
 
-        audio_data, _ = librosa.load(io.BytesIO(audio_bytes), sr=16000)
-        transcription = self.model.transcribe(audio_data, language="ml", verbose=True, batch_size=16)["segments"]
+        audio, _ = librosa.load(io.BytesIO(audio_bytes), sr=16000)
+        result = self.model.transcribe(audio, batch_size=16)
 
-        return transcription
+        return result["segments"]
 
 
 @app.local_entrypoint()
