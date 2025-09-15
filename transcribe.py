@@ -1,4 +1,4 @@
-# venv/bin/modal run transcribe.py --file-path /Users/firozahmed/Downloads/audio.mpeg
+# venv/bin/modal run transcribe.py --file-path /Users/firozahmed/Downloads/audio.opus
 
 from pathlib import Path
 import modal
@@ -6,8 +6,8 @@ import modal
 image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
     .entrypoint([])
-    .apt_install("git", "ffmpeg", "libcudnn8", "libcudnn8-dev")
-    .uv_pip_install("whisperx", "librosa", "numpy")
+    .apt_install("git", "ffmpeg", "libcudnn8")
+    .uv_pip_install("whisperx", "librosa")
 )
 
 app = modal.App("whisperx", image=image)
