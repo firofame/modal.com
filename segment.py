@@ -14,7 +14,7 @@ image = (
         "pyannote.audio",
         "pydub",
         "torchaudio",
-        "hf-transfer",
+        "huggingface-hub[hf-transfer]",
     )
 )
 
