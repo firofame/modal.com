@@ -3,51 +3,47 @@
 from pathlib import Path
 import modal
 
-app = modal.App(name="whisper-transcribe-openai")
-
-MODEL_DIR = "/model"
-MODEL_NAME = "large-v3"
-volume = modal.Volume.from_name("whisper-model-vol", create_if_missing=True)
-
-image = modal.Image.debian_slim(python_version="3.12").uv_pip_install(
-    "openai-whisper",
-    "librosa",
+image = (
+    modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
+    .entrypoint([])
+    .apt_install("git", "ffmpeg", "libcudnn8", "libcudnn8-dev")
+    .pip_install("whisperx", "librosa")
 )
+app = modal.App("whisperx", image=image)
 
-@app.local_entrypoint()
-def main(file_path: str):
-    path = Path(file_path)
-    text = Transcribe().transcribe.remote(path.read_bytes())
-    print(f"Transcription: {text}")
+GPU_CONFIG = "T4"
+
+CACHE_DIR = "/cache"
+cache_vol = modal.Volume.from_name("whisper-cache", create_if_missing=True)
 
 @app.cls(
-    image=image,
-    gpu="L40s",
-    volumes={MODEL_DIR: volume},
-    scaledown_window=240,
-    timeout=600,
+    gpu=GPU_CONFIG,
+    volumes={CACHE_DIR: cache_vol},
+    scaledown_window=60 * 10,
+    timeout=60 * 60,
 )
-class Transcribe:
+@modal.concurrent(max_inputs=15)
+class Model:
     @modal.enter()
-    def load_model(self):
-        import whisper
-        from pathlib import Path
+    def setup(self):
+        import whisperx
 
-        model_path = Path(MODEL_DIR) / f"{MODEL_NAME}.pt"
-        if not model_path.exists():
-            whisper.load_model(MODEL_NAME, download_root=MODEL_DIR)
-            volume.commit()
-        self.model = whisper.load_model(MODEL_NAME, download_root=MODEL_DIR)
+        device = "cuda"
+        self.model = whisperx.load_model("large-v2", device, compute_type="float16", download_root=CACHE_DIR)
 
     @modal.method()
-    def transcribe(
-        self,
-        audio_bytes: bytes,
-    ) -> str:
+    def transcribe(self, audio_bytes: bytes):
         import io
         import librosa
 
         audio_data, _ = librosa.load(io.BytesIO(audio_bytes), sr=16000)
-        transcription = self.model.transcribe(audio_data, language="ml", verbose=True)["text"]
+        transcription = self.model.transcribe(audio_data, language="ml", verbose=True, batch_size=16)["segments"]
 
         return transcription
+
+
+@app.local_entrypoint()
+def main(file_path: str):
+    path = Path(file_path)
+    text = Model().transcribe.remote(path.read_bytes())
+    print(f"Transcription: {text}")
