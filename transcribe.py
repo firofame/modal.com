@@ -6,23 +6,21 @@ import modal
 image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
     .entrypoint([])
-    .apt_install("git", "ffmpeg", "libcudnn8")
-    .uv_pip_install("whisperx", "librosa")
+    .apt_install("git", "ffmpeg", "libsndfile1")
+    .uv_pip_install("librosa", "transformers", "torch", "accelerate")
 )
 
-app = modal.App("whisperx", image=image)
+app = modal.App("whisper-medium", image=image)
 
 CACHE_DIR = "/cache"
 device = "cuda"
 
 with image.imports():
-    import whisperx
-    
-    import warnings
-    warnings.filterwarnings("ignore", category=UserWarning)
+    import torch
+    from transformers import pipeline
 
 @app.cls(
-    gpu="L40s",
+    gpu="T4",
     volumes={CACHE_DIR: modal.Volume.from_name("whisper-cache", create_if_missing=True)},
     scaledown_window=60 * 10,
     timeout=60 * 60,
@@ -31,17 +29,23 @@ with image.imports():
 class Model:
     @modal.enter()
     def setup(self):
-        self.model = whisperx.load_model("large-v3", device, compute_type="float16", download_root=CACHE_DIR)
+        self.pipe = pipeline(
+            "automatic-speech-recognition",
+            model="vrclc/Whisper-small-Malayalam",
+            chunk_length_s=10,
+            device=device,
+            torch_dtype=torch.float16,
+        )
 
     @modal.method()
     def transcribe(self, audio_bytes: bytes):
         import io
         import librosa
 
-        audio, _ = librosa.load(io.BytesIO(audio_bytes), sr=16000)
-        result = self.model.transcribe(audio, batch_size=16)
+        audio, _ = librosa.load(io.BytesIO(audio_bytes), sr=16000, mono=True)
+        result = self.pipe(audio)
 
-        return result["segments"]
+        return result["text"]
 
 
 @app.local_entrypoint()
