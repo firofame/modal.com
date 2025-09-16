@@ -18,6 +18,9 @@ device = "cuda"
 with image.imports():
     import torch
     from transformers import pipeline
+    
+    import warnings
+    warnings.filterwarnings("ignore", category=UserWarning)
 
 @app.cls(
     gpu="T4",
@@ -32,9 +35,9 @@ class Model:
         self.pipe = pipeline(
             "automatic-speech-recognition",
             model="vrclc/Whisper-small-Malayalam",
-            chunk_length_s=10,
             device=device,
-            torch_dtype=torch.float16,
+            dtype=torch.float16,
+            generate_kwargs={"language": "malayalam", "task": "transcribe"},
         )
 
     @modal.method()
