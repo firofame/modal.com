@@ -21,7 +21,7 @@ with image.imports():
     warnings.filterwarnings("ignore", category=UserWarning)
 
 @app.cls(
-    gpu="T4",
+    gpu="L40s",
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     scaledown_window=60 * 10,
     timeout=60 * 60,
@@ -36,6 +36,7 @@ class Model:
             model="vrclc/Whisper-medium-Malayalam",
             device="cuda",
             dtype=torch.float16,
+            return_timestamps=True,
             generate_kwargs={"language": "malayalam", "task": "transcribe"},
         )
 
