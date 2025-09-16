@@ -7,13 +7,11 @@ image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
     .entrypoint([])
     .apt_install("git", "ffmpeg", "libsndfile1")
-    .uv_pip_install("librosa", "transformers", "torch", "accelerate")
+    .uv_pip_install("librosa", "transformers", "torch", "accelerate", "huggingface-hub[hf-transfer]")
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
-app = modal.App("whisper-medium", image=image)
-
-CACHE_DIR = "/cache"
-device = "cuda"
+app = modal.App("whisper-malayalam", image=image)
 
 with image.imports():
     import torch
@@ -24,9 +22,10 @@ with image.imports():
 
 @app.cls(
     gpu="T4",
-    volumes={CACHE_DIR: modal.Volume.from_name("whisper-cache", create_if_missing=True)},
+    volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     scaledown_window=60 * 10,
     timeout=60 * 60,
+    secrets=[modal.Secret.from_name("huggingface-secret")],
 )
 @modal.concurrent(max_inputs=15)
 class Model:
@@ -34,8 +33,8 @@ class Model:
     def setup(self):
         self.pipe = pipeline(
             "automatic-speech-recognition",
-            model="vrclc/Whisper-small-Malayalam",
-            device=device,
+            model="vrclc/Whisper-medium-Malayalam",
+            device="cuda",
             dtype=torch.float16,
             generate_kwargs={"language": "malayalam", "task": "transcribe"},
         )
