@@ -1,8 +1,9 @@
+# venv/bin/modal serve comfi.py
+# https://registry.comfy.org/
+
 from pathlib import Path
 import subprocess
 import modal
-
-# https://registry.comfy.org/
 
 image = (
     modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
@@ -15,6 +16,8 @@ image = (
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-reactor")
     .run_commands("comfy node install comfyui_ipadapter_plus")
+    .run_commands("comfy node install comfyui-mmaudio")
+    .run_commands("comfy node install comfyui-videohelpersuite")
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
@@ -113,13 +116,26 @@ def hf_download():
     t5xxl_fp16 = hf_hub_download(repo_id="comfyanonymous/flux_text_encoders", filename="t5xxl_fp16.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {t5xxl_fp16} /root/comfy/ComfyUI/models/text_encoders/t5xxl_fp16.safetensors", shell=True, check=True)
 
-secrets = [modal.Secret.from_name("huggingface-secret")]
+    Path("/root/comfy/ComfyUI/models/mmaudio").mkdir(parents=True, exist_ok=True)
+    mmaudio_large = hf_hub_download(repo_id="Kijai/MMAudio_safetensors", filename="mmaudio_large_44k_v2_fp16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {mmaudio_large} /root/comfy/ComfyUI/models/mmaudio/mmaudio_large_44k_v2_fp16.safetensors", shell=True, check=True)
+
+    mmaudio_synchformer = hf_hub_download(repo_id="Kijai/MMAudio_safetensors", filename="mmaudio_synchformer_fp16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {mmaudio_synchformer} /root/comfy/ComfyUI/models/mmaudio/mmaudio_synchformer_fp16.safetensors", shell=True, check=True)
+
+    apple_dfn5b = hf_hub_download(repo_id="Kijai/MMAudio_safetensors", filename="apple_DFN5B-CLIP-ViT-H-14-384_fp16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {apple_dfn5b} /root/comfy/ComfyUI/models/mmaudio/apple_DFN5B-CLIP-ViT-H-14-384_fp16.safetensors", shell=True, check=True)
+
+    mmaudio_vae = hf_hub_download(repo_id="Kijai/MMAudio_safetensors", filename="mmaudio_vae_44k_fp16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {mmaudio_vae} /root/comfy/ComfyUI/models/mmaudio/mmaudio_vae_44k_fp16.safetensors", shell=True, check=True)
+
+
 vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
-image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=secrets)
+image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("huggingface-secret")])
 
 app = modal.App(name="comfy-ui", image=image)
 
-@app.function(max_containers=1, gpu="L40s", volumes={"/cache": vol})
+@app.function(max_containers=1, gpu="T4", volumes={"/cache": vol})
 @modal.concurrent(max_inputs=10)
 @modal.web_server(8000, startup_timeout=60)
 def ui():
