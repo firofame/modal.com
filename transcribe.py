@@ -21,7 +21,7 @@ with image.imports():
     warnings.filterwarnings("ignore", category=UserWarning)
 
 @app.cls(
-    gpu="L40s",
+    gpu="T4",
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     scaledown_window=60 * 10,
     timeout=60 * 60,

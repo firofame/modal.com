@@ -39,7 +39,7 @@ with image.imports():
     import torchaudio
 
 @app.cls(
-    image=image, gpu="L40s", volumes=volumes, secrets=secrets, scaledown_window=240, timeout=600
+    image=image, gpu="T4", volumes=volumes, secrets=secrets, scaledown_window=240, timeout=600
 )
 class Model:
     @modal.enter()
