@@ -11,13 +11,16 @@ image = (
     .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
     .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli")
     .env({"CC": "gcc", "CXX": "g++"}) # Install insightface with explicit compiler environment variables
-    .run_commands("comfy --skip-prompt install --fast-deps --nvidia")
-    .run_commands("comfy node install ComfyUI-Manager")
+    .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129")
+    .run_commands("comfy --skip-prompt install --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-reactor")
     .run_commands("comfy node install comfyui_ipadapter_plus")
     .run_commands("comfy node install comfyui-mmaudio")
     .run_commands("comfy node install comfyui-videohelpersuite")
+    .run_commands("comfy node install ComfyUI-WanVideoWrapper")
+    .run_commands("comfy node install comfyui-kjnodes")
+    .run_commands("comfy node install ComfyUI-MelBandRoFormer")
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
@@ -129,6 +132,23 @@ def hf_download():
     mmaudio_vae = hf_hub_download(repo_id="Kijai/MMAudio_safetensors", filename="mmaudio_vae_44k_fp16.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {mmaudio_vae} /root/comfy/ComfyUI/models/mmaudio/mmaudio_vae_44k_fp16.safetensors", shell=True, check=True)
 
+    melband_roformer = hf_hub_download(repo_id="Kijai/MelBandRoFormer_comfy", filename="MelBandRoformer_fp16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {melband_roformer} /root/comfy/ComfyUI/models/diffusion_models/MelBandRoformer_fp16.safetensors", shell=True, check=True)
+
+    lightx2v = hf_hub_download(repo_id="Kijai/WanVideo_comfy", filename="Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {lightx2v} /root/comfy/ComfyUI/models/loras/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors", shell=True, check=True)
+
+    wan2_1_infinitetalk = hf_hub_download(repo_id="Kijai/WanVideo_comfy_GGUF", filename="InfiniteTalk/Wan2_1-InfiniteTalk_Single_Q8.gguf", cache_dir="/cache")
+    subprocess.run(f"ln -s {wan2_1_infinitetalk} /root/comfy/ComfyUI/models/diffusion_models/Wan2_1-InfiniteTalk_Single_Q8.gguf", shell=True, check=True)
+
+    clip_vision_h = hf_hub_download(repo_id="Comfy-Org/Wan_2.1_ComfyUI_repackaged", filename="split_files/clip_vision/clip_vision_h.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {clip_vision_h} /root/comfy/ComfyUI/models/clip_vision/clip_vision_h.safetensors", shell=True, check=True)
+
+    wan2_1_i2v_14b_480p = hf_hub_download(repo_id="city96/Wan2.1-I2V-14B-480P-gguf", filename="wan2.1-i2v-14b-480p-Q8_0.gguf", cache_dir="/cache")
+    subprocess.run(f"ln -s {wan2_1_i2v_14b_480p} /root/comfy/ComfyUI/models/diffusion_models/wan2.1-i2v-14b-480p-Q8_0.gguf", shell=True, check=True)
+
+    umt5_xxl_enc_bf16 = hf_hub_download(repo_id="Kijai/WanVideo_comfy", filename="umt5-xxl-enc-bf16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {umt5_xxl_enc_bf16} /root/comfy/ComfyUI/models/text_encoders/umt5-xxl-enc-bf16.safetensors", shell=True, check=True)
 
 vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("huggingface-secret")])
