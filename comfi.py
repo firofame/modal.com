@@ -10,7 +10,7 @@ image = (
     .entrypoint([])
     .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
     .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli")
-    .env({"CC": "gcc", "CXX": "g++"}) # Install insightface with explicit compiler environment variables
+    .env({"CC": "gcc", "CXX": "g++"})
     .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129")
     .run_commands("comfy --skip-prompt install --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
@@ -21,6 +21,7 @@ image = (
     .run_commands("comfy node install ComfyUI-WanVideoWrapper")
     .run_commands("comfy node install comfyui-kjnodes")
     .run_commands("comfy node install ComfyUI-MelBandRoFormer")
+    .run_commands("comfy node install ComfyUI-VibeVoice")
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
@@ -155,7 +156,7 @@ image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=[modal.
 
 app = modal.App(name="comfy-ui", image=image)
 
-@app.function(max_containers=1, gpu="T4", volumes={"/cache": vol})
+@app.function(max_containers=1, gpu="L4", volumes={"/cache": vol})
 @modal.concurrent(max_inputs=10)
 @modal.web_server(8000, startup_timeout=60)
 def ui():
