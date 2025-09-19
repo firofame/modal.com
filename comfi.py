@@ -8,10 +8,23 @@ import modal
 image = (
     modal.Image.debian_slim(python_version="3.13")
     .entrypoint([])
-    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
+    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0", "wget")
     .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli")
-    .env({"CC": "gcc", "CXX": "g++"})
+    .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
     .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129")
+    .run_commands(
+        "wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb",
+        "dpkg -i cuda-keyring_1.1-1_all.deb",
+        "apt update",
+        "apt -y install cuda-toolkit-12-9",
+    )
+    .run_commands("git clone https://github.com/thu-ml/SageAttention /SageAttention")
+    .run_commands(
+        "cd /SageAttention && "
+        "sed -i 's/raise RuntimeError(\"No GPUs found.*\")/print(\"⚠️ No GPUs at build time, using TORCH_CUDA_ARCH_LIST\")/' setup.py && "
+        "export TORCH_CUDA_ARCH_LIST=\"8.6\" EXT_PARALLEL=4 NVCC_APPEND_FLAGS=\"--threads 8\" MAX_JOBS=32 && "
+        "pip install -e ."
+    )
     .run_commands("comfy --skip-prompt install --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-reactor")
@@ -22,7 +35,6 @@ image = (
     .run_commands("comfy node install comfyui-kjnodes")
     .run_commands("comfy node install ComfyUI-MelBandRoFormer")
     .run_commands("comfy node install ComfyUI-VibeVoice")
-    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
 def hf_download():
