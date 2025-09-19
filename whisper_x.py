@@ -42,5 +42,9 @@ class Model:
 @app.local_entrypoint()
 def main(file_path: str):
     path = Path(file_path)
+    output_path = path.with_suffix(".txt")
+
     transcription = Model().transcribe.remote(path.read_bytes())
-    print(f"Transcription:\n{transcription}")
+
+    output_path.write_text(transcription)
+    print(f"Transcription saved to: {output_path}")
