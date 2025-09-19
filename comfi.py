@@ -34,7 +34,7 @@ image = (
     .run_commands("comfy node install ComfyUI-WanVideoWrapper")
     .run_commands("comfy node install comfyui-kjnodes")
     .run_commands("comfy node install ComfyUI-MelBandRoFormer")
-    .run_commands("comfy node install ComfyUI-VibeVoice")
+    .run_commands("comfy node install VibeVoice-ComfyUI")
 )
 
 def hf_download():
