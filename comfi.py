@@ -8,23 +8,10 @@ import modal
 image = (
     modal.Image.debian_slim(python_version="3.13")
     .entrypoint([])
-    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0", "wget")
+    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
     .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli")
     .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
     .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129")
-    .run_commands(
-        "wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb",
-        "dpkg -i cuda-keyring_1.1-1_all.deb",
-        "apt update",
-        "apt -y install cuda-toolkit-12-9",
-    )
-    .run_commands("git clone https://github.com/thu-ml/SageAttention /SageAttention")
-    .run_commands(
-        "cd /SageAttention && "
-        "sed -i 's/raise RuntimeError(\"No GPUs found.*\")/print(\"⚠️ No GPUs at build time, using TORCH_CUDA_ARCH_LIST\")/' setup.py && "
-        "export TORCH_CUDA_ARCH_LIST=\"8.6\" EXT_PARALLEL=4 NVCC_APPEND_FLAGS=\"--threads 8\" MAX_JOBS=32 && "
-        "pip install -e ."
-    )
     .run_commands("comfy --skip-prompt install --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-reactor")
@@ -145,20 +132,23 @@ def hf_download():
     mmaudio_vae = hf_hub_download(repo_id="Kijai/MMAudio_safetensors", filename="mmaudio_vae_44k_fp16.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {mmaudio_vae} /root/comfy/ComfyUI/models/mmaudio/mmaudio_vae_44k_fp16.safetensors", shell=True, check=True)
 
+    Path("/root/comfy/ComfyUI/models/diffusion_models/MelBandRoFormer").mkdir(parents=True, exist_ok=True)
     melband_roformer = hf_hub_download(repo_id="Kijai/MelBandRoFormer_comfy", filename="MelBandRoformer_fp16.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {melband_roformer} /root/comfy/ComfyUI/models/diffusion_models/MelBandRoformer_fp16.safetensors", shell=True, check=True)
-
+    subprocess.run(f"ln -s {melband_roformer} /root/comfy/ComfyUI/models/diffusion_models/MelBandRoFormer/MelBandRoformer_fp16.safetensors", shell=True, check=True)
+    
+    Path("/root/comfy/ComfyUI/models/loras/WanVideo/Lightx2v").mkdir(parents=True, exist_ok=True)
     lightx2v = hf_hub_download(repo_id="Kijai/WanVideo_comfy", filename="Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {lightx2v} /root/comfy/ComfyUI/models/loras/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors", shell=True, check=True)
+    subprocess.run(f"ln -s {lightx2v} /root/comfy/ComfyUI/models/loras/WanVideo/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank64_bf16.safetensors", shell=True, check=True)
 
+    Path("/root/comfy/ComfyUI/models/diffusion_models/WanVideo/InfiniteTalk").mkdir(parents=True, exist_ok=True)
     wan2_1_infinitetalk = hf_hub_download(repo_id="Kijai/WanVideo_comfy_GGUF", filename="InfiniteTalk/Wan2_1-InfiniteTalk_Single_Q8.gguf", cache_dir="/cache")
-    subprocess.run(f"ln -s {wan2_1_infinitetalk} /root/comfy/ComfyUI/models/diffusion_models/Wan2_1-InfiniteTalk_Single_Q8.gguf", shell=True, check=True)
+    subprocess.run(f"ln -s {wan2_1_infinitetalk} /root/comfy/ComfyUI/models/diffusion_models/WanVideo/InfiniteTalk/Wan2_1-InfiniteTalk_Single_Q8.gguf", shell=True, check=True)
 
     clip_vision_h = hf_hub_download(repo_id="Comfy-Org/Wan_2.1_ComfyUI_repackaged", filename="split_files/clip_vision/clip_vision_h.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {clip_vision_h} /root/comfy/ComfyUI/models/clip_vision/clip_vision_h.safetensors", shell=True, check=True)
 
     wan2_1_i2v_14b_480p = hf_hub_download(repo_id="city96/Wan2.1-I2V-14B-480P-gguf", filename="wan2.1-i2v-14b-480p-Q8_0.gguf", cache_dir="/cache")
-    subprocess.run(f"ln -s {wan2_1_i2v_14b_480p} /root/comfy/ComfyUI/models/diffusion_models/wan2.1-i2v-14b-480p-Q8_0.gguf", shell=True, check=True)
+    subprocess.run(f"ln -s {wan2_1_i2v_14b_480p} /root/comfy/ComfyUI/models/diffusion_models/WanVideo/wan2.1-i2v-14b-480p-Q8_0.gguf", shell=True, check=True)
 
     umt5_xxl_enc_bf16 = hf_hub_download(repo_id="Kijai/WanVideo_comfy", filename="umt5-xxl-enc-bf16.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {umt5_xxl_enc_bf16} /root/comfy/ComfyUI/models/text_encoders/umt5-xxl-enc-bf16.safetensors", shell=True, check=True)
@@ -168,7 +158,7 @@ image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=[modal.
 
 app = modal.App(name="comfy-ui", image=image)
 
-@app.function(max_containers=1, gpu="L4", volumes={"/cache": vol})
+@app.function(max_containers=1, gpu="T4", volumes={"/cache": vol})
 @modal.concurrent(max_inputs=10)
 @modal.web_server(8000, startup_timeout=60)
 def ui():
