@@ -113,6 +113,9 @@ def hf_download():
     ae = hf_hub_download(repo_id="black-forest-labs/FLUX.1-Kontext-dev", filename="ae.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {ae} /root/comfy/ComfyUI/models/vae/ae.safetensors", shell=True, check=True)
 
+    krea_dev_fp8_scaled = hf_hub_download(repo_id="Comfy-Org/FLUX.1-Krea-dev_ComfyUI", filename="split_files/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {krea_dev_fp8_scaled} /root/comfy/ComfyUI/models/diffusion_models/flux1-krea-dev_fp8_scaled.safetensors", shell=True, check=True)
+
     clip_l = hf_hub_download(repo_id="comfyanonymous/flux_text_encoders", filename="clip_l.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {clip_l} /root/comfy/ComfyUI/models/text_encoders/clip_l.safetensors", shell=True, check=True)
 
@@ -158,7 +161,7 @@ image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=[modal.
 
 app = modal.App(name="comfy-ui", image=image)
 
-@app.function(max_containers=1, gpu="T4", volumes={"/cache": vol})
+@app.function(max_containers=1, gpu="L4", volumes={"/cache": vol})
 @modal.concurrent(max_inputs=10)
 @modal.web_server(8000, startup_timeout=60)
 def ui():
