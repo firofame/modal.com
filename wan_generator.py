@@ -1,7 +1,5 @@
 # venv/bin/modal serve wan_generator.py
 
-from io import BytesIO
-from pathlib import Path
 import modal
 import subprocess
 
@@ -24,12 +22,8 @@ image = (
 
 app = modal.App("Wan2GP", image=image)
 
-with image.imports():    
-    import warnings
-    warnings.filterwarnings("ignore", category=FutureWarning)
-
-@app.function(max_containers=1, gpu="L4", volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)})
+@app.function(max_containers=1, gpu="L4")
 @modal.concurrent(max_inputs=10)
-@modal.web_server(7860, startup_timeout=600)
+@modal.web_server(7860, startup_timeout=120)
 def ui():
     subprocess.Popen("cd /Wan2GP && python wgp.py --server-name 0.0.0.0", shell=True)
