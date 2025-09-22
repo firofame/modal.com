@@ -8,10 +8,17 @@ import modal
 image = (
     modal.Image.debian_slim(python_version="3.13")
     .entrypoint([])
-    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0")
-    .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli")
-    .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
-    .run_commands("pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129")
+    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0", "wget", "ninja-build")
+    .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli", "setuptools", "wheel")
+    .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "TORCH_CUDA_ARCH_LIST": "8.9", "EXT_PARALLEL": "4", "MAX_JOBS": "8"})
+    .run_commands(
+        "pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129",
+        "wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb",
+        "dpkg -i cuda-keyring_1.1-1_all.deb",
+        "apt-get update",
+        "apt-get -y install cuda-toolkit-12-9",
+        "pip install git+https://github.com/winggan/SageAttention.git@patch-1",
+    )
     .run_commands("comfy --skip-prompt install --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-reactor")
