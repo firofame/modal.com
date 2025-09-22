@@ -10,7 +10,7 @@ image = (
     .entrypoint([])
     .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0", "wget", "ninja-build")
     .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli", "setuptools", "wheel")
-    .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "TORCH_CUDA_ARCH_LIST": "8.9", "EXT_PARALLEL": "4", "MAX_JOBS": "8"})
+    .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "TORCH_CUDA_ARCH_LIST": "8.9"})
     .run_commands(
         "pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129",
         "wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb",
