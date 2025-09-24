@@ -36,7 +36,7 @@ def edit_image_remote(image_bytes: bytes) -> bytes:
 
     pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-    SEED = 42
+    SEED = torch.randint(0, 100000, (1,)).item()  # Generate a random seed
     generator = torch.Generator(device=DEVICE).manual_seed(SEED)
 
     # Run the edit
