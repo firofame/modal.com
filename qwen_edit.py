@@ -1,6 +1,6 @@
 # venv/bin/modal run qwen_edit.py
 
-prompt = "cute woman"
+prompt = "cute muslim woman"
 file_path = "/Users/firozahmed/Downloads/photo.png"
 
 import io
@@ -32,7 +32,7 @@ def edit_image_remote(image_bytes: bytes) -> bytes:
 
     DEVICE = "cuda"
 
-    PIPE = QwenImageEditPlusPipeline.from_pretrained("Qwen/Qwen-Image-Edit-2509", torch_dtype=torch.float16).to(DEVICE)
+    PIPE = QwenImageEditPlusPipeline.from_pretrained("Qwen/Qwen-Image-Edit-2509", torch_dtype=torch.bfloat16).to(DEVICE)
 
     pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
