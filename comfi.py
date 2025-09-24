@@ -34,6 +34,12 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
+    Qwen_Edit_4steps = hf_hub_download(repo_id="lightx2v/Qwen-Image-Lightning", filename="Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {Qwen_Edit_4steps} /root/comfy/ComfyUI/models/loras/Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors", shell=True, check=True)
+
+    qwen_image_edit_2509_fp8_e4m3fn = hf_hub_download(repo_id="Comfy-Org/Qwen-Image-Edit_ComfyUI", filename="split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_edit_2509_fp8_e4m3fn} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", shell=True, check=True)
+
     qwen_image_vae = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/vae/qwen_image_vae.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {qwen_image_vae} /root/comfy/ComfyUI/models/vae/qwen_image_vae.safetensors", shell=True, check=True)
 
