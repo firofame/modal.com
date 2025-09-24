@@ -67,6 +67,6 @@ def main():
     result_bytes = edit_image_remote.remote(image_bytes=image_bytes)
 
     # Save result next to input file
-    out_path = in_path.with_name(f"{in_path.stem}_edited.png")
+    out_path = in_path.with_name(f"{in_path.stem}_edited_{prompt}.png")
     out_path.write_bytes(result_bytes)
     print(f"Done. Saved: {out_path}")
