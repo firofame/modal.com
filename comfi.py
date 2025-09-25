@@ -9,7 +9,7 @@ image = (
     modal.Image.debian_slim(python_version="3.13")
     .entrypoint([])
     .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0", "wget", "ninja-build")
-    .uv_pip_install("huggingface-hub[hf-transfer]", "git+https://github.com/Comfy-Org/comfy-cli", "setuptools", "wheel")
+    .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli", "setuptools", "wheel")
     .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "TORCH_CUDA_ARCH_LIST": "8.9"})
     .run_commands(
         "pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129",
@@ -19,7 +19,7 @@ image = (
         "apt-get -y install cuda-toolkit-12-9",
         "pip install git+https://github.com/winggan/SageAttention.git@patch-1",
     )
-    .run_commands("comfy --skip-prompt install --nvidia --skip-torch-or-directml")
+    .run_commands("comfy --skip-prompt install --version nightly --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-reactor")
     .run_commands("comfy node install comfyui_ipadapter_plus")
@@ -34,8 +34,17 @@ image = (
 def hf_download():
     from huggingface_hub import hf_hub_download
 
-    Qwen_Edit_4steps = hf_hub_download(repo_id="lightx2v/Qwen-Image-Lightning", filename="Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {Qwen_Edit_4steps} /root/comfy/ComfyUI/models/loras/Qwen-Image-Edit-Lightning-4steps-V1.0.safetensors", shell=True, check=True)
+    qwen_2_5_vl_7b = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/text_encoders/qwen_2.5_vl_7b.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_2_5_vl_7b} /root/comfy/ComfyUI/models/text_encoders/qwen_2.5_vl_7b.safetensors", shell=True, check=True)
+
+    Qwen_2_8steps_bf16 = hf_hub_download(repo_id="lightx2v/Qwen-Image-Lightning", filename="Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {Qwen_2_8steps_bf16} /root/comfy/ComfyUI/models/loras/Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors", shell=True, check=True)
+
+    qwen_image_edit_2509_bf16 = hf_hub_download(repo_id="Comfy-Org/Qwen-Image-Edit_ComfyUI", filename="split_files/diffusion_models/qwen_image_edit_2509_bf16.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_edit_2509_bf16} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_edit_2509_bf16.safetensors", shell=True, check=True)
+
+    Qwen_2_8steps = hf_hub_download(repo_id="lightx2v/Qwen-Image-Lightning", filename="Qwen-Image-Lightning-8steps-V2.0.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {Qwen_2_8steps} /root/comfy/ComfyUI/models/loras/Qwen-Image-Lightning-8steps-V2.0.safetensors", shell=True, check=True)
 
     qwen_image_edit_2509_fp8_e4m3fn = hf_hub_download(repo_id="Comfy-Org/Qwen-Image-Edit_ComfyUI", filename="split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {qwen_image_edit_2509_fp8_e4m3fn} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", shell=True, check=True)
@@ -176,6 +185,6 @@ app = modal.App(name="comfy-ui", image=image)
 
 @app.function(max_containers=1, gpu="L4", volumes={"/cache": vol})
 @modal.concurrent(max_inputs=10)
-@modal.web_server(8000, startup_timeout=60)
+@modal.web_server(8000, startup_timeout=120)
 def ui():
     subprocess.Popen("comfy launch -- --listen 0.0.0.0 --port 8000", shell=True)
