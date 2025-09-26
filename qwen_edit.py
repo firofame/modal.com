@@ -20,10 +20,11 @@ image = (
         "git+https://github.com/huggingface/diffusers",
         "huggingface-hub[hf-transfer]",
         "kernels",
+        "spaces",
     )
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "PYTHONPATH": "/root"})
     .run_commands(
-        "cd /root && git clone https://huggingface.co/spaces/Qwen/Qwen-Image-Edit-2509 && mv Qwen-Image-Edit-2509/qwenimage . && rm -rf Qwen-Image-Edit-2509"
+        "cd /root && git clone https://huggingface.co/spaces/Qwen/Qwen-Image-Edit-2509 && mv Qwen-Image-Edit-2509/qwenimage . && mv Qwen-Image-Edit-2509/optimization.py . && rm -rf Qwen-Image-Edit-2509"
     )
 )
 
@@ -40,6 +41,7 @@ def edit_image_remote(image_bytes: bytes) -> bytes:
     from qwenimage.pipeline_qwenimage_edit_plus import QwenImageEditPlusPipeline
     from qwenimage.transformer_qwenimage import QwenImageTransformer2DModel
     from qwenimage.qwen_fa3_processor import QwenDoubleStreamAttnProcessorFA3
+    from optimization import optimize_pipeline_
 
     DEVICE = "cuda"
     ONE_MEGAPIXEL = 1024 * 1024
