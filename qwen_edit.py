@@ -22,7 +22,9 @@ image = (
         "kernels",
     )
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "PYTHONPATH": "/root"})
-    .add_local_dir("qwenimage", remote_path="/root/qwenimage")
+    .run_commands(
+        "cd /root && git clone https://huggingface.co/spaces/Qwen/Qwen-Image-Edit-2509 && mv Qwen-Image-Edit-2509/qwenimage . && rm -rf Qwen-Image-Edit-2509"
+    )
 )
 
 @app.function(
