@@ -19,8 +19,10 @@ image = (
         "accelerate",
         "git+https://github.com/huggingface/diffusers",
         "huggingface-hub[hf-transfer]",
+        "kernels",
     )
-    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "PYTHONPATH": "/root"})
+    .add_local_dir("qwenimage", remote_path="/root/qwenimage")
 )
 
 @app.function(
@@ -33,12 +35,16 @@ def edit_image_remote(image_bytes: bytes) -> bytes:
     import math
     import torch
     from PIL import Image
-    from diffusers import QwenImageEditPlusPipeline
+    from qwenimage.pipeline_qwenimage_edit_plus import QwenImageEditPlusPipeline
+    from qwenimage.transformer_qwenimage import QwenImageTransformer2DModel
+    from qwenimage.qwen_fa3_processor import QwenDoubleStreamAttnProcessorFA3
 
     DEVICE = "cuda"
     ONE_MEGAPIXEL = 1024 * 1024
 
-    PIPE = QwenImageEditPlusPipeline.from_pretrained("Qwen/Qwen-Image-Edit-2509", torch_dtype=torch.bfloat16).to(DEVICE)
+    pipe = QwenImageEditPlusPipeline.from_pretrained("Qwen/Qwen-Image-Edit-2509", torch_dtype=torch.bfloat16).to(DEVICE)
+    pipe.transformer.__class__ = QwenImageTransformer2DModel
+    pipe.transformer.set_attn_processor(QwenDoubleStreamAttnProcessorFA3())
 
     pil_image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
@@ -54,7 +60,7 @@ def edit_image_remote(image_bytes: bytes) -> bytes:
     generator = torch.Generator(device=DEVICE).manual_seed(SEED)
 
     # Run the edit
-    out = PIPE(
+    out = pipe(
         image=[pil_image],
         prompt=prompt,
         negative_prompt="",
