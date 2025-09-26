@@ -1,4 +1,9 @@
-# venv/bin/modal run transcribe.py --file-path /Users/firozahmed/Downloads/audio.opus
+# venv/bin/modal run transcribe.py
+
+file_path = "/Users/firozahmed/Downloads/audio.opus"
+
+MODEL_NAME = "openai/whisper-large-v3"
+# MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
 
 from pathlib import Path
 import modal
@@ -21,7 +26,7 @@ with image.imports():
     warnings.filterwarnings("ignore", category=UserWarning)
 
 @app.cls(
-    gpu="T4",
+    gpu="L4",
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     scaledown_window=60 * 10,
     timeout=60 * 60,
@@ -33,11 +38,12 @@ class Model:
     def setup(self):
         self.pipe = pipeline(
             "automatic-speech-recognition",
-            model="vrclc/Whisper-medium-Malayalam",
+            model=MODEL_NAME,
             device="cuda",
-            dtype=torch.float16,
+            chunk_length_s=30,
             return_timestamps=True,
-            generate_kwargs={"language": "malayalam", "task": "transcribe"},
+            batch_size=8,
+            generate_kwargs={"task": "transcribe"},
         )
 
     @modal.method()
@@ -52,7 +58,7 @@ class Model:
 
 
 @app.local_entrypoint()
-def main(file_path: str):
+def main():
     path = Path(file_path)
     text = Model().transcribe.remote(path.read_bytes())
     print(f"Transcription: {text}")
