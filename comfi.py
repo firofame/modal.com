@@ -29,6 +29,7 @@ image = (
     .run_commands("comfy node install comfyui-kjnodes")
     .run_commands("comfy node install ComfyUI-MelBandRoFormer")
     .run_commands("comfy node install VibeVoice-ComfyUI")
+    .run_commands("comfy node install ComfyUI-GGUF")
 )
 
 def hf_download():
@@ -178,8 +179,20 @@ def hf_download():
     umt5_xxl_enc_bf16 = hf_hub_download(repo_id="Kijai/WanVideo_comfy", filename="umt5-xxl-enc-bf16.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {umt5_xxl_enc_bf16} /root/comfy/ComfyUI/models/text_encoders/umt5-xxl-enc-bf16.safetensors", shell=True, check=True)
 
+    Path("/root/comfy/ComfyUI/models/unet").mkdir(parents=True, exist_ok=True)
+    qwen_image_edit_gguf_Q8 = hf_hub_download(repo_id="QuantStack/Qwen-Image-Edit-2509-GGUF", filename="Qwen-Image-Edit-2509-Q8_0.gguf", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_edit_gguf_Q8} /root/comfy/ComfyUI/models/unet/Qwen-Image-Edit-2509-Q8_0.gguf", shell=True, check=True)
+
+def civit_download():
+    import os
+    
+    Path("/root/comfy/ComfyUI/models/loras").mkdir(parents=True, exist_ok=True)
+    lora_url = "https://civitai.com/api/download/models/2105899?type=Model&format=SafeTensor"
+    subprocess.run(f"wget --content-disposition -P /root/comfy/ComfyUI/models/loras/ '{lora_url}&token={os.environ['CIVIT_TOKEN']}'", shell=True, check=True)
+
 vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("huggingface-secret")])
+image = image.run_function(civit_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("custom-secret")])
 
 app = modal.App(name="comfy-ui", image=image)
 
