@@ -44,6 +44,7 @@ class Model:
             return_timestamps=True,
             batch_size=8,
             generate_kwargs={"task": "transcribe"},
+            ignore_warning=True,
         )
 
     @modal.method()
