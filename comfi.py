@@ -6,58 +6,26 @@ import subprocess
 import modal
 
 image = (
-    modal.Image.debian_slim(python_version="3.13")
+    modal.Image.from_registry("pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel", add_python="3.13")
     .entrypoint([])
-    .apt_install("git", "build-essential", "cmake", "gcc", "g++", "libgl1", "libglib2.0-0", "wget", "ninja-build")
-    .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli", "setuptools", "wheel")
-    .env({"CC": "gcc", "CXX": "g++", "HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache", "TORCH_CUDA_ARCH_LIST": "8.9"})
-    .run_commands(
-        "pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu129",
-        "wget https://developer.download.nvidia.com/compute/cuda/repos/debian12/x86_64/cuda-keyring_1.1-1_all.deb",
-        "dpkg -i cuda-keyring_1.1-1_all.deb",
-        "apt-get update",
-        "apt-get -y install cuda-toolkit-12-9",
-        "pip install git+https://github.com/winggan/SageAttention.git@patch-1",
-    )
-    .run_commands("comfy --skip-prompt install --version nightly --nvidia --skip-torch-or-directml")
+    .run_commands("apt update")
+    .apt_install("git", "ninja-build", "libgl1", "libglib2.0-0")
+    .uv_pip_install("huggingface-hub[hf-transfer]", "comfy-cli")
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
+    .uv_pip_install("setuptools", "wheel", "ninja")
+    .run_commands('TORCH_CUDA_ARCH_LIST="8.9" pip install --use-pep517 --no-build-isolation git+https://github.com/winggan/SageAttention.git@patch-1')
+    .run_commands("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
-    .run_commands("comfy node install comfyui-reactor")
-    .run_commands("comfy node install comfyui_ipadapter_plus")
-    .run_commands("comfy node install comfyui-mmaudio")
-    .run_commands("comfy node install comfyui-videohelpersuite")
-    .run_commands("comfy node install ComfyUI-WanVideoWrapper")
+    # .run_commands("comfy node install comfyui-videohelpersuite")
+    # .run_commands("comfy node install ComfyUI-WanVideoWrapper")
     .run_commands("comfy node install comfyui-kjnodes")
-    .run_commands("comfy node install ComfyUI-MelBandRoFormer")
-    .run_commands("comfy node install VibeVoice-ComfyUI")
+    # .run_commands("comfy node install ComfyUI-MelBandRoFormer")
+    # .run_commands("comfy node install VibeVoice-ComfyUI")
     .run_commands("comfy node install ComfyUI-GGUF")
 )
 
 def hf_download():
     from huggingface_hub import hf_hub_download
-
-    qwen_2_5_vl_7b = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/text_encoders/qwen_2.5_vl_7b.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {qwen_2_5_vl_7b} /root/comfy/ComfyUI/models/text_encoders/qwen_2.5_vl_7b.safetensors", shell=True, check=True)
-
-    Qwen_2_8steps_bf16 = hf_hub_download(repo_id="lightx2v/Qwen-Image-Lightning", filename="Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {Qwen_2_8steps_bf16} /root/comfy/ComfyUI/models/loras/Qwen-Image-Lightning-8steps-V2.0-bf16.safetensors", shell=True, check=True)
-
-    qwen_image_edit_2509_bf16 = hf_hub_download(repo_id="Comfy-Org/Qwen-Image-Edit_ComfyUI", filename="split_files/diffusion_models/qwen_image_edit_2509_bf16.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {qwen_image_edit_2509_bf16} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_edit_2509_bf16.safetensors", shell=True, check=True)
-
-    Qwen_2_8steps = hf_hub_download(repo_id="lightx2v/Qwen-Image-Lightning", filename="Qwen-Image-Lightning-8steps-V2.0.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {Qwen_2_8steps} /root/comfy/ComfyUI/models/loras/Qwen-Image-Lightning-8steps-V2.0.safetensors", shell=True, check=True)
-
-    qwen_image_edit_2509_fp8_e4m3fn = hf_hub_download(repo_id="Comfy-Org/Qwen-Image-Edit_ComfyUI", filename="split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {qwen_image_edit_2509_fp8_e4m3fn} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", shell=True, check=True)
-
-    qwen_image_vae = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/vae/qwen_image_vae.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {qwen_image_vae} /root/comfy/ComfyUI/models/vae/qwen_image_vae.safetensors", shell=True, check=True)
-
-    qwen_2_5_vl_7b_fp8_scaled = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {qwen_2_5_vl_7b_fp8_scaled} /root/comfy/ComfyUI/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors", shell=True, check=True)
-
-    qwen_image_fp8_e4m3fn = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/diffusion_models/qwen_image_fp8_e4m3fn.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {qwen_image_fp8_e4m3fn} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_fp8_e4m3fn.safetensors", shell=True, check=True)
 
     t5xxl_fp8_e4m3fn_scaled = hf_hub_download(repo_id="comfyanonymous/flux_text_encoders", filename="t5xxl_fp8_e4m3fn_scaled.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {t5xxl_fp8_e4m3fn_scaled} /root/comfy/ComfyUI/models/text_encoders/t5xxl_fp8_e4m3fn_scaled.safetensors", shell=True, check=True)
@@ -108,9 +76,6 @@ def hf_download():
 
     firoz = hf_hub_download(repo_id="firofame/firoz", filename="firoz.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {firoz} /root/comfy/ComfyUI/models/loras/firoz.safetensors", shell=True, check=True)
-
-    manjuw = hf_hub_download(repo_id="firofame/manjuw", filename="manjuw.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s {manjuw} /root/comfy/ComfyUI/models/loras/manjuw.safetensors", shell=True, check=True)
 
     RealESRGAN_x2 = hf_hub_download(repo_id="ai-forever/Real-ESRGAN", filename="RealESRGAN_x2.pth", cache_dir="/cache")
     subprocess.run(f"ln -s {RealESRGAN_x2} /root/comfy/ComfyUI/models/upscale_models/RealESRGAN_x2.pth", shell=True, check=True)
@@ -179,10 +144,6 @@ def hf_download():
     umt5_xxl_enc_bf16 = hf_hub_download(repo_id="Kijai/WanVideo_comfy", filename="umt5-xxl-enc-bf16.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s {umt5_xxl_enc_bf16} /root/comfy/ComfyUI/models/text_encoders/umt5-xxl-enc-bf16.safetensors", shell=True, check=True)
 
-    Path("/root/comfy/ComfyUI/models/unet").mkdir(parents=True, exist_ok=True)
-    qwen_image_edit_gguf_Q8 = hf_hub_download(repo_id="QuantStack/Qwen-Image-Edit-2509-GGUF", filename="Qwen-Image-Edit-2509-Q8_0.gguf", cache_dir="/cache")
-    subprocess.run(f"ln -s {qwen_image_edit_gguf_Q8} /root/comfy/ComfyUI/models/unet/Qwen-Image-Edit-2509-Q8_0.gguf", shell=True, check=True)
-
 def civit_download():
     import os
     
@@ -190,9 +151,32 @@ def civit_download():
     lora_url = "https://civitai.com/api/download/models/2105899?type=Model&format=SafeTensor"
     subprocess.run(f"wget --content-disposition -P /root/comfy/ComfyUI/models/loras/ '{lora_url}&token={os.environ['CIVIT_TOKEN']}'", shell=True, check=True)
 
+def qwen_download():
+    from huggingface_hub import hf_hub_download
+
+    mannequin_clipper = hf_hub_download(repo_id="drbaph/Qwen-Image-Edit-Mannequin-Clipper-LoRA", filename="qwen_image_edit_ mannequin-clipper_v1.0.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s '{mannequin_clipper}' '/root/comfy/ComfyUI/models/loras/qwen_image_edit_ mannequin-clipper_v1.0.safetensors'", shell=True, check=True)
+
+    Qwen_Lora_4steps = hf_hub_download(repo_id="lightx2v/Qwen-Image-Lightning", filename="Qwen-Image-Lightning-4steps-V1.0.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {Qwen_Lora_4steps} /root/comfy/ComfyUI/models/loras/Qwen-Image-Lightning-4steps-V1.0.safetensors", shell=True, check=True)
+
+    qwen_image_edit_2509_fp8_e4m3fn = hf_hub_download(repo_id="Comfy-Org/Qwen-Image-Edit_ComfyUI", filename="split_files/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_edit_2509_fp8_e4m3fn} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_edit_2509_fp8_e4m3fn.safetensors", shell=True, check=True)
+
+    qwen_image_vae = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/vae/qwen_image_vae.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_vae} /root/comfy/ComfyUI/models/vae/qwen_image_vae.safetensors", shell=True, check=True)
+
+    qwen_2_5_vl_7b_fp8_scaled = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_2_5_vl_7b_fp8_scaled} /root/comfy/ComfyUI/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors", shell=True, check=True)
+
+    qwen_image_fp8_e4m3fn = hf_hub_download(repo_id="Comfy-Org/Qwen-Image_ComfyUI", filename="split_files/diffusion_models/qwen_image_fp8_e4m3fn.safetensors", cache_dir="/cache")
+    subprocess.run(f"ln -s {qwen_image_fp8_e4m3fn} /root/comfy/ComfyUI/models/diffusion_models/qwen_image_fp8_e4m3fn.safetensors", shell=True, check=True)
+
 vol = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
-image = image.run_function(hf_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("huggingface-secret")])
-image = image.run_function(civit_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("custom-secret")])
+image = image.run_function(qwen_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("huggingface-secret")])
+# image = image.run_function(civit_download, volumes={"/cache": vol}, secrets=[modal.Secret.from_name("custom-secret")])
+
+image =image.add_local_file("/Users/firozahmed/Downloads/photo.jpg", remote_path="/root/comfy/ComfyUI/input/photo.jpg")
 
 app = modal.App(name="comfy-ui", image=image)
 
