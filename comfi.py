@@ -1,16 +1,11 @@
 # venv/bin/modal serve comfi.py
 # https://registry.comfy.org/
 
-prompt = "change sky color to green"
-workflow_api_str = f"""
-{{"3":{{"inputs":{{"seed":913629450015772,"steps":4,"cfg":1,"sampler_name":"euler","scheduler":"simple","denoise":1,"model":["75",0],"positive":["111",0],"negative":["110",0],"latent_image":["88",0]}},"class_type":"KSampler","_meta":{{"title":"KSampler"}}}},"8":{{"inputs":{{"samples":["3",0],"vae":["39",0]}},"class_type":"VAEDecode","_meta":{{"title":"VAE Decode"}}}},"37":{{"inputs":{{"unet_name":"qwen_image_edit_2509_fp8_e4m3fn.safetensors","weight_dtype":"default"}},"class_type":"UNETLoader","_meta":{{"title":"Load Diffusion Model"}}}},"38":{{"inputs":{{"clip_name":"qwen_2.5_vl_7b_fp8_scaled.safetensors","type":"qwen_image","device":"default"}},"class_type":"CLIPLoader","_meta":{{"title":"Load CLIP"}}}},"39":{{"inputs":{{"vae_name":"qwen_image_vae.safetensors"}},"class_type":"VAELoader","_meta":{{"title":"Load VAE"}}}},"60":{{"inputs":{{"filename_prefix":"ComfyUI","images":["8",0]}},"class_type":"SaveImage","_meta":{{"title":"Save Image"}}}},"66":{{"inputs":{{"shift":3,"model":["89",0]}},"class_type":"ModelSamplingAuraFlow","_meta":{{"title":"ModelSamplingAuraFlow"}}}},"75":{{"inputs":{{"strength":1,"model":["66",0]}},"class_type":"CFGNorm","_meta":{{"title":"CFGNorm"}}}},"78":{{"inputs":{{"image":"photo.jpeg"}},"class_type":"LoadImage","_meta":{{"title":"Load Image"}}}},"88":{{"inputs":{{"pixels":["93",0],"vae":["39",0]}},"class_type":"VAEEncode","_meta":{{"title":"VAE Encode"}}}},"89":{{"inputs":{{"lora_name":"Qwen-Image-Lightning-4steps-V1.0.safetensors","strength_model":1,"model":["115",0]}},"class_type":"LoraLoaderModelOnly","_meta":{{"title":"LoraLoaderModelOnly"}}}},"93":{{"inputs":{{"upscale_method":"lanczos","megapixels":1,"image":["78",0]}},"class_type":"ImageScaleToTotalPixels","_meta":{{"title":"Scale Image to Total Pixels"}}}},"110":{{"inputs":{{"prompt":"","clip":["38",0],"vae":["39",0],"image1":["93",0]}},"class_type":"TextEncodeQwenImageEditPlus","_meta":{{"title":"TextEncodeQwenImageEditPlus"}}}},"111":{{"inputs":{{"prompt":"{prompt}","clip":["38",0],"vae":["39",0],"image1":["93",0]}},"class_type":"TextEncodeQwenImageEditPlus","_meta":{{"title":"TextEncodeQwenImageEditPlus"}}}},"112":{{"inputs":{{"width":1024,"height":1024,"batch_size":1}},"class_type":"EmptySD3LatentImage","_meta":{{"title":"EmptySD3LatentImage"}}}},"115":{{"inputs":{{"lora_name":"qwen_image_edit_ mannequin-clipper_v1.0.safetensors","strength_model":1,"model":["37",0]}},"class_type":"LoraLoaderModelOnly","_meta":{{"title":"LoraLoaderModelOnly"}}}}}}
-"""
-
+prompt = "clean the background"
 photo = "photo.jpeg"
 
 from pathlib import Path
 import subprocess
-import shlex
 import json
 import modal
 
@@ -24,7 +19,6 @@ image = (
     # .run_commands('TORCH_CUDA_ARCH_LIST="8.9" pip install --use-pep517 --no-build-isolation git+https://github.com/winggan/SageAttention.git@patch-1')
     .run_commands("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
-    .run_commands(f"echo {shlex.quote(json.dumps(json.loads(workflow_api_str)))} > /root/workflow_api.json")
 )
 
 def download_models():
@@ -56,6 +50,9 @@ app = modal.App(name="comfy-qwen-edit", image=image)
 class ComfyUI:
     @modal.enter()
     def launch_comfy_background(self):
+        workflow_api={"3":{"inputs":{"seed":913629450015772,"steps":4,"cfg":1,"sampler_name":"euler","scheduler":"simple","denoise":1,"model":["75",0],"positive":["111",0],"negative":["110",0],"latent_image":["88",0]},"class_type":"KSampler","_meta":{"title":"KSampler"}},"8":{"inputs":{"samples":["3",0],"vae":["39",0]},"class_type":"VAEDecode","_meta":{"title":"VAE Decode"}},"37":{"inputs":{"unet_name":"qwen_image_edit_2509_fp8_e4m3fn.safetensors","weight_dtype":"default"},"class_type":"UNETLoader","_meta":{"title":"Load Diffusion Model"}},"38":{"inputs":{"clip_name":"qwen_2.5_vl_7b_fp8_scaled.safetensors","type":"qwen_image","device":"default"},"class_type":"CLIPLoader","_meta":{"title":"Load CLIP"}},"39":{"inputs":{"vae_name":"qwen_image_vae.safetensors"},"class_type":"VAELoader","_meta":{"title":"Load VAE"}},"60":{"inputs":{"filename_prefix":"ComfyUI","images":["8",0]},"class_type":"SaveImage","_meta":{"title":"Save Image"}},"66":{"inputs":{"shift":3,"model":["89",0]},"class_type":"ModelSamplingAuraFlow","_meta":{"title":"ModelSamplingAuraFlow"}},"75":{"inputs":{"strength":1,"model":["66",0]},"class_type":"CFGNorm","_meta":{"title":"CFGNorm"}},"78":{"inputs":{"image":"photo.jpeg"},"class_type":"LoadImage","_meta":{"title":"Load Image"}},"88":{"inputs":{"pixels":["93",0],"vae":["39",0]},"class_type":"VAEEncode","_meta":{"title":"VAE Encode"}},"89":{"inputs":{"lora_name":"Qwen-Image-Lightning-4steps-V1.0.safetensors","strength_model":1,"model":["115",0]},"class_type":"LoraLoaderModelOnly","_meta":{"title":"LoraLoaderModelOnly"}},"93":{"inputs":{"upscale_method":"lanczos","megapixels":1,"image":["78",0]},"class_type":"ImageScaleToTotalPixels","_meta":{"title":"Scale Image to Total Pixels"}},"110":{"inputs":{"prompt":"","clip":["38",0],"vae":["39",0],"image1":["93",0]},"class_type":"TextEncodeQwenImageEditPlus","_meta":{"title":"TextEncodeQwenImageEditPlus"}},"111":{"inputs":{"prompt":prompt,"clip":["38",0],"vae":["39",0],"image1":["93",0]},"class_type":"TextEncodeQwenImageEditPlus","_meta":{"title":"TextEncodeQwenImageEditPlus"}},"112":{"inputs":{"width":1024,"height":1024,"batch_size":1},"class_type":"EmptySD3LatentImage","_meta":{"title":"EmptySD3LatentImage"}},"115":{"inputs":{"lora_name":"qwen_image_edit_ mannequin-clipper_v1.0.safetensors","strength_model":1,"model":["37",0]},"class_type":"LoraLoaderModelOnly","_meta":{"title":"LoraLoaderModelOnly"}}}
+        with open("/root/workflow_api.json", "w") as f:
+            json.dump(workflow_api, f)
         subprocess.run("comfy launch --background -- --port 8000", shell=True, check=True)
 
     @modal.method()
