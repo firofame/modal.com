@@ -41,11 +41,74 @@ def download_models():
 
 volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 image = image.run_function(download_models, volumes={"/cache": volume}, secrets=[modal.Secret.from_name("huggingface-secret")]) \
-    .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
+    .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}") \
+    .add_local_file(f"/Users/firozahmed/Downloads/image_qwen_image_edit_2509.json", remote_path=f"/root/workflow_api.json")
 
-app = modal.App(name="comfy-qwen-edit", image=image, volumes={"/cache": volume})
-@app.function(max_containers=1, gpu="L4")
-@modal.concurrent(max_inputs=10)
-@modal.web_server(8000, startup_timeout=60)
-def ui():
-    subprocess.Popen("comfy launch -- --listen 0.0.0.0 --port 8000", shell=True)
+app = modal.App(name="comfy-qwen-edit", image=image)
+
+@app.cls(
+    scaledown_window=300,  # 5 minute container keep alive after it processes an input
+    gpu="L4",
+    volumes={"/cache": volume},
+)
+@modal.concurrent(max_inputs=5)  # run 5 inputs per container
+class ComfyUI:
+    port: int = 8000
+
+    @modal.enter()
+    def launch_comfy_background(self):
+        # launch the ComfyUI server exactly once when the container starts
+        cmd = f"comfy launch --background -- --port {self.port}"
+        subprocess.run(cmd, shell=True, check=True)
+
+    def poll_server_health(self, timeout: int = 60) -> None:
+        import time
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            import requests
+            try:
+                response = requests.get(f"http://127.0.0.1:{self.port}/system_stats")
+                if response.status_code == 200:
+                    print("ComfyUI server is healthy.")
+                    return
+            except requests.ConnectionError:
+                pass
+            time.sleep(1)
+        raise TimeoutError("ComfyUI server did not become healthy in time.")
+
+    @modal.method()
+    def infer(self, workflow_path: str = "/root/workflow_api.json"):
+        # sometimes the ComfyUI server stops responding (we think because of memory leaks), so this makes sure it's still up
+        self.poll_server_health()
+
+        # runs the comfy run --workflow command as a subprocess
+        cmd = f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose"
+        subprocess.run(cmd, shell=True, check=True)
+
+        # completed workflows write output images to this directory
+        output_dir = "/root/comfy/ComfyUI/output"
+
+        # looks up the name of the output image file based on the workflow
+        import json
+        workflow = json.loads(Path(workflow_path).read_text())
+        file_prefix = [
+            node.get("inputs")
+            for node in workflow.values()
+            if node.get("class_type") == "SaveImage"
+        ][0]["filename_prefix"]
+
+        # returns the image as bytes
+        for f in Path(output_dir).iterdir():
+            if f.name.startswith(file_prefix):
+                return f.read_bytes()
+
+@app.local_entrypoint()
+def main():
+    """
+    This function runs the ComfyUI workflow remotely and saves the output image
+    to your local downloads folder.
+    """
+    output_bytes = ComfyUI().infer.remote()
+    output_path = Path("/Users/firozahmed/Downloads/comfy_output.png")
+    output_path.write_bytes(output_bytes)
+    print(f"Image saved to {output_path}")
