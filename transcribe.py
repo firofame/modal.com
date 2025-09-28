@@ -28,7 +28,6 @@ with image.imports():
 @app.cls(
     gpu="L4",
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
-    scaledown_window=60 * 10,
     timeout=60 * 60,
     secrets=[modal.Secret.from_name("huggingface-secret")],
 )

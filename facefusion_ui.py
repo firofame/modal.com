@@ -20,7 +20,6 @@ minute = 60
 @app.function(
     image=image,
     gpu="T4",
-    scaledown_window=minute * 5,
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)}
 )
 @modal.concurrent(max_inputs=10)

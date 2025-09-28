@@ -31,7 +31,7 @@ with image.imports():
     from resemble_enhance.enhancer.inference import denoise
 
 @app.cls(
-    image=image, gpu="T4", volumes=volumes, secrets=secrets, scaledown_window=240
+    image=image, gpu="T4", volumes=volumes, secrets=secrets
 )
 class Model:
     @modal.enter()

@@ -19,7 +19,7 @@ with image.imports():
     from chatterbox.tts import ChatterboxTTS
     from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 
-@app.cls(gpu="T4", scaledown_window=60 * 5, enable_memory_snapshot=True)
+@app.cls(gpu="T4", enable_memory_snapshot=True)
 @modal.concurrent(max_inputs=10)
 class Chatterbox:
     @modal.enter()
