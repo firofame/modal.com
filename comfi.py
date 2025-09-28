@@ -49,27 +49,16 @@ image = image.run_function(download_models, volumes={"/cache": volume}, secrets=
 app = modal.App(name="comfy-qwen-edit", image=image)
 
 @app.cls(gpu="L4", volumes={"/cache": volume})
-@modal.concurrent(max_inputs=5)  # run 5 inputs per container
+@modal.concurrent(max_inputs=5)
 class ComfyUI:
-    port: int = 8000
-
     @modal.enter()
     def launch_comfy_background(self):
-        # launch the ComfyUI server exactly once when the container starts
-        cmd = f"comfy launch --background -- --port {self.port}"
-        subprocess.run(cmd, shell=True, check=True)
+        subprocess.run("comfy launch --background -- --port 8000", shell=True, check=True)
 
     @modal.method()
     def infer(self, workflow_path: str = "/root/workflow_api.json"):
-        # runs the comfy run --workflow command as a subprocess
-        cmd = f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose"
-        subprocess.run(cmd, shell=True, check=True)
-
-        # completed workflows write output images to this directory
-        output_dir = "/root/comfy/ComfyUI/output"
-
-        # looks up the name of the output image file based on the workflow
-        import json
+        subprocess.run(f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose", shell=True, check=True)
+        
         workflow = json.loads(Path(workflow_path).read_text())
         file_prefix = [
             node.get("inputs")
@@ -77,8 +66,7 @@ class ComfyUI:
             if node.get("class_type") == "SaveImage"
         ][0]["filename_prefix"]
 
-        # returns the image as bytes
-        for f in Path(output_dir).iterdir():
+        for f in Path("/root/comfy/ComfyUI/output").iterdir():
             if f.name.startswith(file_prefix):
                 return f.read_bytes()
 
