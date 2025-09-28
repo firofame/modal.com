@@ -63,26 +63,8 @@ class ComfyUI:
         cmd = f"comfy launch --background -- --port {self.port}"
         subprocess.run(cmd, shell=True, check=True)
 
-    def poll_server_health(self, timeout: int = 60) -> None:
-        import time
-        start_time = time.time()
-        while time.time() - start_time < timeout:
-            import requests
-            try:
-                response = requests.get(f"http://127.0.0.1:{self.port}/system_stats")
-                if response.status_code == 200:
-                    print("ComfyUI server is healthy.")
-                    return
-            except requests.ConnectionError:
-                pass
-            time.sleep(1)
-        raise TimeoutError("ComfyUI server did not become healthy in time.")
-
     @modal.method()
     def infer(self, workflow_path: str = "/root/workflow_api.json"):
-        # sometimes the ComfyUI server stops responding (we think because of memory leaks), so this makes sure it's still up
-        self.poll_server_health()
-
         # runs the comfy run --workflow command as a subprocess
         cmd = f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose"
         subprocess.run(cmd, shell=True, check=True)
