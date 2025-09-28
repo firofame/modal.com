@@ -7,6 +7,8 @@ photo = "photo.jpeg"
 
 from pathlib import Path
 import subprocess
+import shlex
+import json
 import modal
 
 image = (
@@ -19,6 +21,7 @@ image = (
     # .run_commands('TORCH_CUDA_ARCH_LIST="8.9" pip install --use-pep517 --no-build-isolation git+https://github.com/winggan/SageAttention.git@patch-1')
     .run_commands("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
+    .run_commands(f"echo {shlex.quote(json.dumps(workflow_api))} > /root/workflow_api.json")
 )
 
 def download_models():
@@ -41,8 +44,7 @@ def download_models():
 
 volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 image = image.run_function(download_models, volumes={"/cache": volume}, secrets=[modal.Secret.from_name("huggingface-secret")]) \
-    .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}") \
-    .add_local_file(f"/Users/firozahmed/Downloads/image_qwen_image_edit_2509.json", remote_path=f"/root/workflow_api.json")
+    .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
 
 app = modal.App(name="comfy-qwen-edit", image=image)
 
