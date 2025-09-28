@@ -2,7 +2,8 @@
 # https://registry.comfy.org/
 
 prompt = "change the background to country side"
-photo = "photo.jpg"
+photo = "photo.jpeg"
+gpu = "T4"
 
 from pathlib import Path
 import subprocess
@@ -41,13 +42,13 @@ image = image.run_function(download_models, volumes={"/cache": volume}, secrets=
 
 app = modal.App(name="comfy-qwen-edit", image=image, volumes={"/cache": volume})
 
-@app.function(max_containers=1, gpu="L4")
+@app.function(max_containers=1, gpu=gpu)
 @modal.concurrent(max_inputs=10)
 @modal.web_server(8000, startup_timeout=60)
 def ui():
     subprocess.Popen("comfy launch -- --listen 0.0.0.0 --port 8000", shell=True)
 
-@app.cls(gpu="L4")
+@app.cls(gpu=gpu)
 @modal.concurrent(max_inputs=5)
 class ComfyUI:
     @modal.enter()
