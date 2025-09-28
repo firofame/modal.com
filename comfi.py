@@ -48,11 +48,7 @@ image = image.run_function(download_models, volumes={"/cache": volume}, secrets=
 
 app = modal.App(name="comfy-qwen-edit", image=image)
 
-@app.cls(
-    scaledown_window=300,  # 5 minute container keep alive after it processes an input
-    gpu="L4",
-    volumes={"/cache": volume},
-)
+@app.cls(gpu="L4", volumes={"/cache": volume})
 @modal.concurrent(max_inputs=5)  # run 5 inputs per container
 class ComfyUI:
     port: int = 8000
@@ -88,10 +84,6 @@ class ComfyUI:
 
 @app.local_entrypoint()
 def main():
-    """
-    This function runs the ComfyUI workflow remotely and saves the output image
-    to your local downloads folder.
-    """
     output_bytes = ComfyUI().infer.remote()
     output_path = Path("/Users/firozahmed/Downloads/comfy_output.png")
     output_path.write_bytes(output_bytes)
