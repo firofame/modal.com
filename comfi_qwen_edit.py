@@ -1,7 +1,7 @@
 # venv/bin/modal run comfi_qwen_edit.py
 # https://registry.comfy.org/
 
-prompt = "change the background to city skyline"
+prompt = "change the background to country side"
 photo = "photo.jpg"
 
 from pathlib import Path
@@ -39,9 +39,15 @@ volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
 image = image.run_function(download_models, volumes={"/cache": volume}, secrets=[modal.Secret.from_name("huggingface-secret")]) \
     .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
 
-app = modal.App(name="comfy-qwen-edit", image=image)
+app = modal.App(name="comfy-qwen-edit", image=image, volumes={"/cache": volume})
 
-@app.cls(gpu="L4", volumes={"/cache": volume})
+@app.function(max_containers=1, gpu="L4")
+@modal.concurrent(max_inputs=10)
+@modal.web_server(8000, startup_timeout=60)
+def ui():
+    subprocess.Popen("comfy launch -- --listen 0.0.0.0 --port 8000", shell=True)
+
+@app.cls(gpu="L4")
 @modal.concurrent(max_inputs=5)
 class ComfyUI:
     @modal.enter()
