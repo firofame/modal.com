@@ -2,7 +2,9 @@
 # https://registry.comfy.org/
 
 prompt = "cute muslim woman, head facing forward, straight head position, smiling, happy expression, realistic photo style"
-gpu = "T4"
+width = 768
+height = 1024
+gpu = "L4"
 
 from pathlib import Path
 import subprocess
@@ -42,7 +44,8 @@ app = modal.App(name="comfi-krea", image=image, volumes={"/cache": volume})
 class ComfyUI:
     @modal.enter()
     def launch_comfy_background(self):
-        workflow_api={"8":{"inputs":{"samples":["31",0],"vae":["39",0]},"class_type":"VAEDecode","_meta":{"title":"VAE Decode"}},"9":{"inputs":{"filename_prefix":"flux_krea/flux_krea","images":["8",0]},"class_type":"SaveImage","_meta":{"title":"Save Image"}},"27":{"inputs":{"width":768,"height":1024,"batch_size":1},"class_type":"EmptySD3LatentImage","_meta":{"title":"EmptySD3LatentImage"}},"31":{"inputs":{"seed":842497827323447,"steps":20,"cfg":1,"sampler_name":"euler","scheduler":"simple","denoise":1,"model":["38",0],"positive":["45",0],"negative":["42",0],"latent_image":["27",0]},"class_type":"KSampler","_meta":{"title":"KSampler"}},"38":{"inputs":{"unet_name":"flux1-krea-dev_fp8_scaled.safetensors","weight_dtype":"default"},"class_type":"UNETLoader","_meta":{"title":"Load Diffusion Model"}},"39":{"inputs":{"vae_name":"ae.safetensors"},"class_type":"VAELoader","_meta":{"title":"Load VAE"}},"40":{"inputs":{"clip_name1":"clip_l.safetensors","clip_name2":"t5xxl_fp16.safetensors","type":"flux","device":"default"},"class_type":"DualCLIPLoader","_meta":{"title":"DualCLIPLoader"}},"42":{"inputs":{"conditioning":["45",0]},"class_type":"ConditioningZeroOut","_meta":{"title":"ConditioningZeroOut"}},"45":{"inputs":{"text":prompt,"clip":["40",0]},"class_type":"CLIPTextEncode","_meta":{"title":"CLIP Text Encode (Prompt)"}}}
+        import random
+        workflow_api={"8":{"inputs":{"samples":["31",0],"vae":["39",0]},"class_type":"VAEDecode","_meta":{"title":"VAE Decode"}},"9":{"inputs":{"filename_prefix":"flux_krea/flux_krea","images":["8",0]},"class_type":"SaveImage","_meta":{"title":"Save Image"}},"27":{"inputs":{"width":width,"height":height,"batch_size":1},"class_type":"EmptySD3LatentImage","_meta":{"title":"EmptySD3LatentImage"}},"31":{"inputs":{"seed":random.randint(0, 2**32 - 1),"steps":20,"cfg":1,"sampler_name":"euler","scheduler":"simple","denoise":1,"model":["38",0],"positive":["45",0],"negative":["42",0],"latent_image":["27",0]},"class_type":"KSampler","_meta":{"title":"KSampler"}},"38":{"inputs":{"unet_name":"flux1-krea-dev_fp8_scaled.safetensors","weight_dtype":"default"},"class_type":"UNETLoader","_meta":{"title":"Load Diffusion Model"}},"39":{"inputs":{"vae_name":"ae.safetensors"},"class_type":"VAELoader","_meta":{"title":"Load VAE"}},"40":{"inputs":{"clip_name1":"clip_l.safetensors","clip_name2":"t5xxl_fp16.safetensors","type":"flux","device":"default"},"class_type":"DualCLIPLoader","_meta":{"title":"DualCLIPLoader"}},"42":{"inputs":{"conditioning":["45",0]},"class_type":"ConditioningZeroOut","_meta":{"title":"ConditioningZeroOut"}},"45":{"inputs":{"text":prompt,"clip":["40",0]},"class_type":"CLIPTextEncode","_meta":{"title":"CLIP Text Encode (Prompt)"}}}
         with open("/root/workflow_api.json", "w") as f:
             json.dump(workflow_api, f)
         subprocess.run("comfy launch --background -- --port 8000", shell=True, check=True)
