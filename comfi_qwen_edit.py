@@ -3,7 +3,7 @@
 
 prompt = "change the background to country side"
 photo = "image.jpg"
-gpu = "L4"
+gpu = "L40s"
 
 from pathlib import Path
 import subprocess
@@ -24,12 +24,19 @@ def download_models():
     import os
     from huggingface_hub import hf_hub_download
 
+    models = [
+        {"id": "2256755", "name": "consistence_edit_v2.safetensors", "subdir": "loras"}
+    ]
+    cache_dir = "/cache"
+    comfy_dir = "/root/comfy/ComfyUI/models/"
     token = os.environ["CIVIT_TOKEN"]
-    url = f"https://civitai.com/api/download/models/2256755?type=Model&format=SafeTensor&token={token}"
-    consistence_edit_v2 = "/cache/consistence_edit_v2.safetensors"
-    if not os.path.exists(consistence_edit_v2):
-        subprocess.run(f"aria2c -x 8 -c -o {os.path.basename(consistence_edit_v2)} -d {os.path.dirname(consistence_edit_v2)} '{url}'", shell=True, check=True)
-    subprocess.run(f"ln -s '{consistence_edit_v2}' '/root/comfy/ComfyUI/models/loras/{os.path.basename(consistence_edit_v2)}'", shell=True, check=True)
+    for m in models:
+        url = f"https://civitai.com/api/download/models/{m['id']}?type=Model&format=SafeTensor&token={token}"
+        dest = os.path.join(cache_dir, m["name"])
+        link = os.path.join(comfy_dir, m["subdir"], m["name"])
+        if not os.path.exists(dest):
+            subprocess.run(f"aria2c -x 8 -c -o {os.path.basename(dest)} -d {os.path.dirname(dest)} '{url}'", shell=True, check=True)        
+        subprocess.run(f"ln -s '{dest}' '{link}'", shell=True, check=True)
 
     mannequin_clipper = hf_hub_download(repo_id="drbaph/Qwen-Image-Edit-Mannequin-Clipper-LoRA", filename="qwen_image_edit_ mannequin-clipper_v1.0.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s '{mannequin_clipper}' '/root/comfy/ComfyUI/models/loras/qwen_image_edit_ mannequin-clipper_v1.0.safetensors'", shell=True, check=True)
