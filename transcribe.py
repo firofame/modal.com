@@ -5,13 +5,15 @@ file_path = "/Users/firozahmed/Downloads/audio.opus"
 MODEL_NAME = "openai/whisper-large-v3"
 # MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
 
+gpu = "L4"
+
 from pathlib import Path
 import modal
 
 image = (
-    modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
-    .entrypoint([])
-    .apt_install("git", "ffmpeg", "libsndfile1")
+    modal.Image.from_registry("pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel")
+    .run_commands("apt update")
+    .apt_install("git", "ffmpeg")
     .uv_pip_install("librosa", "transformers", "torch", "accelerate", "huggingface-hub[hf-transfer]")
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
@@ -26,7 +28,7 @@ with image.imports():
     warnings.filterwarnings("ignore", category=UserWarning)
 
 @app.cls(
-    gpu="L4",
+    gpu=gpu,
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     timeout=60 * 60,
     secrets=[modal.Secret.from_name("huggingface-secret")],
