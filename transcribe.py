@@ -60,18 +60,12 @@ class Model:
 
 
 @app.local_entrypoint()
-async def main():
-    import asyncio
-
+def main():
     local_file_path = file_path
     if "youtube.com" in file_path or "youtu.be" in file_path:
         from yt_dlp import YoutubeDL
         ydl_opts = {'quiet': True, 'postprocessors':[{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}], 'outtmpl': 'audio'}
-        
-        def download():
-            YoutubeDL(ydl_opts).download([file_path])
-
-        await asyncio.to_thread(download)
+        YoutubeDL(ydl_opts).download([file_path])
         local_file_path = "audio.mp3"
     path = Path(local_file_path)
     transcription_text = Model().transcribe.remote(path.read_bytes())
