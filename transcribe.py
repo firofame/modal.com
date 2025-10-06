@@ -1,6 +1,6 @@
 # venv/bin/modal run transcribe.py
 
-file_path = "/Users/firozahmed/Downloads/audio.mpeg"
+file_path = "https://www.youtube.com/shorts/xkD4JkcuP9M"
 
 # MODEL_NAME = "openai/whisper-large-v3"
 MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
@@ -60,11 +60,23 @@ class Model:
 
 
 @app.local_entrypoint()
-def main():
-    path = Path(file_path)
+async def main():
+    import asyncio
+
+    local_file_path = file_path
+    if "youtube.com" in file_path or "youtu.be" in file_path:
+        from yt_dlp import YoutubeDL
+        ydl_opts = {'quiet': True, 'postprocessors':[{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}], 'outtmpl': 'audio'}
+        
+        def download():
+            YoutubeDL(ydl_opts).download([file_path])
+
+        await asyncio.to_thread(download)
+        local_file_path = "audio.mp3"
+    path = Path(local_file_path)
     transcription_text = Model().transcribe.remote(path.read_bytes())
 
     output_file_path = path.with_stem(f"{path.stem}_transcription").with_suffix(".txt")
     with open(output_file_path, "w", encoding="utf-8") as f:
         f.write(transcription_text)
-        print(f"Transcription saved to {output_file_path}")
+    print(f"Transcription saved to {output_file_path}")
