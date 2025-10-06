@@ -1,9 +1,9 @@
 # venv/bin/modal run transcribe.py
 
-file_path = "/Users/firozahmed/Downloads/audio.opus"
+file_path = "/Users/firozahmed/Downloads/audio.mpeg"
 
-MODEL_NAME = "openai/whisper-large-v3"
-# MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
+# MODEL_NAME = "openai/whisper-large-v3"
+MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
 
 gpu = "L4"
 
@@ -62,5 +62,9 @@ class Model:
 @app.local_entrypoint()
 def main():
     path = Path(file_path)
-    text = Model().transcribe.remote(path.read_bytes())
-    print(f"Transcription: {text}")
+    transcription_text = Model().transcribe.remote(path.read_bytes())
+
+    output_file_path = path.with_stem(f"{path.stem}_transcription").with_suffix(".txt")
+    with open(output_file_path, "w", encoding="utf-8") as f:
+        f.write(transcription_text)
+        print(f"Transcription saved to {output_file_path}")
