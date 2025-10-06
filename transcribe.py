@@ -1,9 +1,9 @@
 # venv/bin/modal run transcribe.py
 
-file_path = "https://www.youtube.com/shorts/xkD4JkcuP9M"
+file_path = "./audio.mp3"
 
-# MODEL_NAME = "openai/whisper-large-v3"
-MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
+MODEL_NAME = "openai/whisper-large-v3"
+# MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
 
 from pathlib import Path
 import modal
@@ -38,6 +38,7 @@ class Model:
             task="automatic-speech-recognition",
             model=MODEL_NAME,
             chunk_length_s=30,
+            ignore_warning=True,
             batch_size=8,
             device=0,
             return_timestamps=True,
