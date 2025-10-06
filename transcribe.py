@@ -37,8 +37,9 @@ class Model:
         pipe = pipeline(
             task="automatic-speech-recognition",
             model=MODEL_NAME,
-            dtype=torch.float16,
-            device="cuda",
+            chunk_length_s=30,
+            batch_size=8,
+            device=0,
             return_timestamps=True,
             generate_kwargs={"task": "transcribe"},
         )
