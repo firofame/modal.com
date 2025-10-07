@@ -1,0 +1,65 @@
+# venv/bin/modal run whisper.py
+# yt-dlp -x -o "audio.%(ext)s" "1qrLpx3yi5k"
+
+local_file_path = "/Users/firozahmed/Downloads/audio.opus"
+
+from pathlib import Path
+import modal
+
+image = (
+    modal.Image.from_registry("pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel")
+    .run_commands("apt update")
+    .apt_install("git", "ffmpeg","libcudnn8")
+    .uv_pip_install("whisperx", "huggingface-hub[hf-transfer]")
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
+)
+
+app = modal.App("whisperx", image=image)
+
+CACHE_DIR = "/cache"
+cache_vol = modal.Volume.from_name("whisper-cache", create_if_missing=True)
+
+@app.cls(
+    gpu="L4",
+    volumes={CACHE_DIR: cache_vol},
+    scaledown_window=60 * 10,
+    timeout=60 * 60,
+    secrets=[modal.Secret.from_name("huggingface-secret")],
+)
+@modal.concurrent(max_inputs=15)
+class Model:
+    @modal.enter()
+    def setup(self):
+        import whisperx
+
+        device = "cuda"
+        compute_type = ("float16")
+
+        self.model = whisperx.load_model("large-v3", device, compute_type=compute_type, download_root=CACHE_DIR)
+    @modal.method()
+    def transcribe(self, audio_bytes: bytes):
+        import tempfile
+        import whisperx
+
+        batch_size = 16
+
+        with tempfile.NamedTemporaryFile() as temp_file:
+            temp_file.write(audio_bytes)
+            temp_file.flush()
+            audio = whisperx.load_audio(temp_file.name)
+            result = self.model.transcribe(audio, batch_size=batch_size)
+            return result["segments"]
+
+
+@app.local_entrypoint()
+def main():
+    path = Path(local_file_path)
+    segments = Model().transcribe.remote(path.read_bytes())
+
+    # Join the 'text' of each segment to form a single string.
+    transcription_text = "\n".join(segment["text"].strip() for segment in segments)
+
+    output_file_path = path.with_stem(f"{path.stem}_transcription").with_suffix(".txt")
+    with open(output_file_path, "w", encoding="utf-8") as f:
+        f.write(transcription_text)
+    print(f"Transcription saved to {output_file_path}")
