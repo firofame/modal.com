@@ -1,7 +1,7 @@
 # venv/bin/modal run whisper_x.py
-# yt-dlp -x -o "audio.%(ext)s" "1qrLpx3yi5k"
+# yt-dlp -x -o "audio.%(ext)s" "b0G8weNIv6o"
 
-local_file_path = "/Users/firozahmed/Downloads/audio.opus"
+local_file_path = "audio.opus"
 
 from pathlib import Path
 import modal
