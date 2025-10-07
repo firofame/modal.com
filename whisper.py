@@ -28,26 +28,18 @@ cache_vol = modal.Volume.from_name("whisper-cache", create_if_missing=True)
 )
 @modal.concurrent(max_inputs=15)
 class Model:
-    @modal.enter()
-    def setup(self):
-        import whisperx
-
-        device = "cuda"
-        compute_type = ("float16")
-
-        self.model = whisperx.load_model("large-v3", device, compute_type=compute_type, download_root=CACHE_DIR)
     @modal.method()
     def transcribe(self, audio_bytes: bytes):
-        import tempfile
         import whisperx
+        import tempfile
 
-        batch_size = 16
+        model = whisperx.load_model("large-v3", "cuda", compute_type="float16", download_root=CACHE_DIR)
 
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(audio_bytes)
             temp_file.flush()
             audio = whisperx.load_audio(temp_file.name)
-            result = self.model.transcribe(audio, batch_size=batch_size)
+            result = model.transcribe(audio, batch_size=16)
             return result["segments"]
 
 
@@ -55,10 +47,7 @@ class Model:
 def main():
     path = Path(local_file_path)
     segments = Model().transcribe.remote(path.read_bytes())
-
-    # Join the 'text' of each segment to form a single string.
     transcription_text = "\n".join(segment["text"].strip() for segment in segments)
-
     output_file_path = path.with_stem(f"{path.stem}_transcription").with_suffix(".txt")
     with open(output_file_path, "w", encoding="utf-8") as f:
         f.write(transcription_text)
