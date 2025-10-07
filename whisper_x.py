@@ -20,7 +20,7 @@ CACHE_DIR = "/cache"
 cache_vol = modal.Volume.from_name("whisper-cache", create_if_missing=True)
 
 @app.cls(
-    gpu="L4",
+    gpu="T4",
     volumes={CACHE_DIR: cache_vol},
     scaledown_window=60 * 10,
     timeout=60 * 60,
