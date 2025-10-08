@@ -1,4 +1,4 @@
-# venv/bin/modal run transcribe.py
+# venv/bin/modal run whisper_malayalam.py
 
 local_file_path = "/Users/firozahmed/Downloads/audio.mpeg"
 
@@ -13,7 +13,7 @@ image = (
     .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
-app = modal.App("whisper", image=image)
+app = modal.App("whisper-malayalam", image=image)
 
 @app.cls(
     gpu="L4",
