@@ -1,61 +1,46 @@
-# venv/bin/modal run segment.py --file-path /Users/firozahmed/Downloads/Bayan.ogg
+# venv/bin/modal run segment.py
 
-from io import BytesIO
+local_file_path = "/Users/firozahmed/Downloads/audio.ogg"
+
 from pathlib import Path
-import tempfile
-
 import modal
 
 image = (
-    modal.Image.from_registry("nvidia/cuda:12.9.1-devel-ubuntu22.04", add_python="3.12")
-    .entrypoint([])
+    modal.Image.from_registry("pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel")
+    .run_commands("apt update")
     .apt_install("git", "ffmpeg")
-    .uv_pip_install(
-        "pyannote.audio",
-        "pydub",
-        "torchaudio",
-        "huggingface-hub[hf-transfer]",
-    )
+    .uv_pip_install("pydub", "pyannote.audio", "huggingface-hub[hf-transfer]")
+    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
 )
 
-CACHE_DIR = Path("/cache")
-cache_volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
-volumes = {CACHE_DIR: cache_volume}
-
-secrets = [modal.Secret.from_name("huggingface-secret")]
-
-
-image = image.env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": str(CACHE_DIR)})
-
-
-app = modal.App("audio-segment")
-
-with image.imports():
-    import os
-    import torch
-    from pyannote.audio import Pipeline
-    from pydub import AudioSegment
-    import whisper
-    import torchaudio
+app = modal.App("audio-segment", image=image)
 
 @app.cls(
-    image=image, gpu="T4", volumes=volumes, secrets=secrets, timeout=600
+    gpu="L4",
+    volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
+    timeout=60 * 60,
+    secrets=[modal.Secret.from_name("huggingface-secret")],
 )
 class Model:
-    @modal.enter()
-    def enter(self):
-        self.pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-3.1")
-        DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.pipeline.to(DEVICE)
-
     @modal.method()
     def inference(self, input_bytes: bytes, suffix:str) -> bytes:
+        import tempfile
+        from io import BytesIO
+        from pydub import AudioSegment
+        import torch
+        import torchaudio
+        from pyannote.audio import Pipeline
+
+        pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization-community-1")
+        pipeline.to(torch.device("cuda"))
+
         with tempfile.NamedTemporaryFile(suffix=suffix) as temp_file:
             temp_file.write(input_bytes)
             temp_file.flush()
             
-            # Run diarization
-            diarization = self.pipeline(temp_file.name)
+            waveform, sample_rate = torchaudio.load(temp_file.name)
+            # Run diarization on the resampled audio
+            diarization = pipeline({"waveform": waveform, "sample_rate": sample_rate}).speaker_diarization
 
             for turn, _, speaker in diarization.itertracks(yield_label=True):
                 print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
@@ -82,8 +67,8 @@ class Model:
             return buffer.getvalue()
 
 @app.local_entrypoint()
-def main(file_path: str):
-    path = Path(file_path)
+def main():
+    path = Path(local_file_path)
     output_bytes = Model().inference.remote(input_bytes=path.read_bytes(), suffix=path.suffix)
     
     output_path = path.with_stem(f"{path.stem}_segment").with_suffix(".mp3")
