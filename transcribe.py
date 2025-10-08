@@ -1,9 +1,6 @@
 # venv/bin/modal run transcribe.py
 
-file_path = "./audio.mp3"
-
-MODEL_NAME = "openai/whisper-large-v3"
-# MODEL_NAME = "vrclc/Whisper-medium-Malayalam"
+local_file_path = "/Users/firozahmed/Downloads/audio.mpeg"
 
 from pathlib import Path
 import modal
@@ -36,13 +33,13 @@ class Model:
 
         pipe = pipeline(
             task="automatic-speech-recognition",
-            model=MODEL_NAME,
+            model="vrclc/Whisper-medium-Malayalam",
             chunk_length_s=30,
             ignore_warning=True,
             batch_size=8,
             device=0,
             return_timestamps=True,
-            generate_kwargs={"task": "transcribe"},
+            generate_kwargs={"task": "transcribe", "language": "malayalam"},
         )
 
         audio, _ = librosa.load(io.BytesIO(audio_bytes), sr=16000, mono=True)
@@ -53,12 +50,6 @@ class Model:
 
 @app.local_entrypoint()
 def main():
-    local_file_path = file_path
-    if "youtube.com" in file_path or "youtu.be" in file_path:
-        from yt_dlp import YoutubeDL
-        ydl_opts = {'postprocessors':[{'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3'}], 'outtmpl': 'audio'}
-        YoutubeDL(ydl_opts).download([file_path])
-        local_file_path = "audio.mp3"
     path = Path(local_file_path)
     transcription_text = Model().transcribe.remote(path.read_bytes())
 
