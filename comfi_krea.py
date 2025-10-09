@@ -1,7 +1,7 @@
 # venv/bin/modal run comfi_krea.py
 # https://registry.comfy.org/
 
-prompt = "cute muslim woman, head facing forward, straight head position, smiling, happy expression, realistic photo style"
+prompt = "A cute, chubby Muslim woman standing confidently facing forward, head held straight, smiling with a happy and warm expression. She is wearing modest, stylish Islamic clothing (such as a colorful hijab and a long tunic or abaya), and the image is captured in a realistic photo style showing her from head to toe."
 width = 768
 height = 1024
 gpu = "L4"
