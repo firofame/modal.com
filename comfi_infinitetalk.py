@@ -1,18 +1,18 @@
 # venv/bin/modal run comfi_infinitetalk.py
-# https://registry.comfy.org/
 
-prompt = "a woman is singing"
-photo = "photo.png"
+prompt = "a girl is singing"
+photo = "photo.jpg"
 width = 360
 height = 480
-audio = "audio.m4a"
-seconds = 12
+audio = "audio.mp3"
+seconds = 4
 gpu = "L40s"
 
 from pathlib import Path
 import subprocess
 import json
 import modal
+import shutil
 
 image = (
     modal.Image.from_registry("pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel")
@@ -27,7 +27,6 @@ image = (
 )
 
 def download_models():
-    import os
     from huggingface_hub import hf_hub_download, snapshot_download
 
     wav2vec_repo = "TencentGameMate/chinese-wav2vec2-base"
@@ -62,7 +61,7 @@ image = image.run_function(download_models, volumes={"/cache": volume}, secrets=
 
 app = modal.App(name="comfi-infinitetalk", image=image, volumes={"/cache": volume})
 
-@app.cls(gpu=gpu, timeout=seconds*60)
+@app.cls(gpu=gpu, timeout=seconds*60*1.1)
 @modal.concurrent(max_inputs=5)
 class ComfyUI:
     @modal.enter()
@@ -76,59 +75,16 @@ class ComfyUI:
 
     @modal.method()
     def infer(self, workflow_path: str = "/root/workflow_api.json"):
-        subprocess.run(f"comfy run --workflow {workflow_path} --wait --timeout {20*60} --verbose", shell=True, check=True)
-        
-        workflow = json.loads(Path(workflow_path).read_text())
-        
-        # 1. Find the filename_prefix from the workflow
-        filename_prefix = None
-        for node in workflow.values():
-            if node.get("class_type") == "VHS_VideoCombine":  # 修改这里：从 "SaveVideo" 改为 "VHS_VideoCombine"
-                filename_prefix = node["inputs"].get("filename_prefix")
-                break
-        
-        if not filename_prefix:
-            raise ValueError("Could not find 'filename_prefix' in a VHS_VideoCombine node in the workflow.")  # 修改错误信息
+        subprocess.run(f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose", shell=True, check=True)
 
-        # The prefix can be a path like "video/ComfyUI", we need the base name "ComfyUI"
-        file_basename = Path(filename_prefix).name
-        
-        # 2. Find the output file using the extracted prefix
         output_dir = Path("/root/comfy/ComfyUI/output")
-        valid_exts = {".mp4", ".webm", ".gif", ".png", ".jpg", ".jpeg"}
-
-        candidates = [
-            p for p in output_dir.rglob(f"{file_basename}*")
-            if p.is_file() and p.suffix.lower() in valid_exts
-        ]
-        
-        if not candidates:
-            # Optional: dump tree for debugging
-            subprocess.run(f"ls -R {output_dir}", shell=True)
-            raise FileNotFoundError(
-                f"No output file found with prefix '{file_basename}'. "
-                f"Make sure VHS_VideoCombine.save_output=true and "
-                f"that files are written to {output_dir}."
-            )
-
-        latest_file = max(candidates, key=lambda p: p.stat().st_mtime)
-        
-        # 3. Return both filename and bytes
-        return {
-            "filename": latest_file.name,
-            "bytes": latest_file.read_bytes()
-        }
+        zip_path = Path("/root/comfy/ComfyUI/output.zip")
+        shutil.make_archive(zip_path.with_suffix(''), 'zip', output_dir)
+        return zip_path.read_bytes()
 
 @app.local_entrypoint()
 def main():
-    # --- MODIFIED SECTION ---
-    result = ComfyUI().infer.remote()
-    
-    output_filename = result["filename"]
-    output_bytes = result["bytes"]
-    
-    # Use the original filename from the remote execution
-    output_path = Path(f"/Users/firozahmed/Downloads/{output_filename}")
+    output_bytes = ComfyUI().infer.remote()
+    output_path = Path(f"/Users/firozahmed/Downloads/output.zip")
     output_path.write_bytes(output_bytes)
-    
-    print(f"Video saved to {output_path}")
+    print(f"File saved to {output_path}")
