@@ -1,5 +1,5 @@
 # venv/bin/modal run whisper_x.py
-# yt-dlp -x -o "audio.%(ext)s" "b0G8weNIv6o"
+# yt-dlp -x -o "audio.%(ext)s" "Ln3CGhx8DcI"
 
 local_file_path = "audio.opus"
 
@@ -16,12 +16,9 @@ image = (
 
 app = modal.App("whisperx", image=image)
 
-CACHE_DIR = "/cache"
-cache_vol = modal.Volume.from_name("whisper-cache", create_if_missing=True)
-
 @app.cls(
     gpu="T4",
-    volumes={CACHE_DIR: cache_vol},
+    volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     scaledown_window=60 * 10,
     timeout=60 * 60,
     secrets=[modal.Secret.from_name("huggingface-secret")],
@@ -33,7 +30,7 @@ class Model:
         import whisperx
         import tempfile
 
-        model = whisperx.load_model("large-v3", "cuda", compute_type="float16", download_root=CACHE_DIR)
+        model = whisperx.load_model("large-v3", "cuda", compute_type="float16", download_root="/cache")
 
         with tempfile.NamedTemporaryFile() as temp_file:
             temp_file.write(audio_bytes)
