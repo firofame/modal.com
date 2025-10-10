@@ -61,7 +61,7 @@ image = image.run_function(download_models, volumes={"/cache": volume}, secrets=
 
 app = modal.App(name="comfi-infinitetalk", image=image, volumes={"/cache": volume})
 
-@app.cls(gpu=gpu, timeout=seconds*60*1.1)
+@app.cls(gpu=gpu, timeout=seconds*60*2)
 @modal.concurrent(max_inputs=5)
 class ComfyUI:
     @modal.enter()
