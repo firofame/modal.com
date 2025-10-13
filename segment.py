@@ -1,6 +1,6 @@
 # venv/bin/modal run segment.py
 
-local_file_path = "/Users/firozahmed/Downloads/audio.ogg"
+local_file_path = "/Users/firozahmed/Downloads/audio_denoise.mp3"
 
 from pathlib import Path
 import modal
@@ -16,7 +16,7 @@ image = (
 app = modal.App("audio-segment", image=image)
 
 @app.cls(
-    gpu="L4",
+    gpu="L40s",
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     timeout=60 * 60,
     secrets=[modal.Secret.from_name("huggingface-secret")],
@@ -39,31 +39,22 @@ class Model:
             temp_file.flush()
             
             waveform, sample_rate = torchaudio.load(temp_file.name)
-            # Run diarization on the resampled audio
             diarization = pipeline({"waveform": waveform, "sample_rate": sample_rate}).speaker_diarization
-
-            for turn, _, speaker in diarization.itertracks(yield_label=True):
-                print(f"start={turn.start:.1f}s stop={turn.end:.1f}s speaker_{speaker}")
-            
-            # Load audio with pydub to easily slice it
             audio = AudioSegment.from_file(temp_file.name)
+            print(diarization.labels())
             
-            # Get all segments for the first speaker
-            first_speaker_segments = AudioSegment.empty()
-            # The first speaker is usually the one with the most speech time.
-            # We can get the label of the first speaker from the diarization result.
+            speaker_segments = AudioSegment.empty()
             try:
-                first_speaker_label = diarization.labels()[0]
+                first_speaker_label = diarization.labels()[1]
                 for turn, _, speaker in diarization.itertracks(yield_label=True):
                     if speaker == first_speaker_label:
-                        # pydub uses milliseconds for slicing
-                        first_speaker_segments += audio[turn.start * 1000:turn.end * 1000]
+                        speaker_segments += audio[turn.start * 1000:turn.end * 1000]
             except IndexError:
                 # If no speakers are found, return the original audio
                 return input_bytes
             
             buffer = BytesIO()
-            first_speaker_segments.export(buffer, format="mp3", parameters=["-ac", "1", "-b:a", "32k"])
+            speaker_segments.export(buffer, format="mp3")
             return buffer.getvalue()
 
 @app.local_entrypoint()

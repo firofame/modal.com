@@ -1,6 +1,6 @@
 # venv/bin/modal run denoise.py
 
-file_path = "/Users/firozahmed/Downloads/audio.mpeg"
+file_path = "/Users/firozahmed/Downloads/audio.mp4"
 
 from io import BytesIO
 from pathlib import Path
@@ -35,7 +35,7 @@ class Model:
             enhanced_wav, new_sr = denoise(dwav, sr, "cuda")
 
             buffer = BytesIO()
-            torchaudio.save(buffer, enhanced_wav.unsqueeze(0).cpu(), new_sr, format="opus")
+            torchaudio.save(buffer, enhanced_wav.unsqueeze(0).cpu(), new_sr, format="mp3")
             return buffer.getvalue()
 
 
@@ -44,7 +44,7 @@ def main():
     path = Path(file_path)
     output_bytes = Model().inference.remote(input_bytes=path.read_bytes(), suffix=path.suffix)
     
-    output_path = path.with_stem(f"{path.stem}_denoise").with_suffix(".opus")
+    output_path = path.with_stem(f"{path.stem}_denoise").with_suffix(".mp3")
     
     output_path.write_bytes(output_bytes)
     print(f"Enhanced audio saved to {output_path}")
