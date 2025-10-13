@@ -1,7 +1,7 @@
 # venv/bin/modal run whisper_x.py
 # yt-dlp -x -o "audio.%(ext)s" "Ln3CGhx8DcI"
 
-local_file_path = "audio.opus"
+local_file_path = "/Users/firozahmed/Downloads/audio.mp4"
 
 from pathlib import Path
 import modal
@@ -17,7 +17,7 @@ image = (
 app = modal.App("whisperx", image=image)
 
 @app.cls(
-    gpu="T4",
+    gpu="L40s",
     volumes={"/cache": modal.Volume.from_name("hf-hub-cache", create_if_missing=True)},
     scaledown_window=60 * 10,
     timeout=60 * 60,

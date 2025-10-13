@@ -17,7 +17,7 @@ image = (
 
 app = modal.App("resemble-enhance")
 
-@app.cls(image=image, gpu="T4")
+@app.cls(image=image, gpu="L40s")
 class Model:
     @modal.method()
     def inference(self, input_bytes: bytes, suffix:str) -> bytes:
