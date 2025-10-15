@@ -20,6 +20,21 @@ image = (
 
 def download_models():
     from huggingface_hub import hf_hub_download
+    import os
+
+    models = [
+        {"id": "1920523", "name": "epiCRealism_XL.safetensors", "subdir": "checkpoints"},
+    ]
+    cache_dir = "/cache"
+    comfy_dir = "/root/comfy/ComfyUI/models/"
+    token = os.environ["CIVIT_TOKEN"]
+    for m in models:
+        url = f"https://civitai.com/api/download/models/{m['id']}?type=Model&format=SafeTensor&token={token}"
+        dest = os.path.join(cache_dir, m["name"])
+        link = os.path.join(comfy_dir, m["subdir"], m["name"])
+        if not os.path.exists(dest):
+            subprocess.run(f"aria2c -x 8 -c -o {os.path.basename(dest)} -d {os.path.dirname(dest)} '{url}'", shell=True, check=True)        
+        subprocess.run(f"ln -s '{dest}' '{link}'", shell=True, check=True)
 
     Qwen_Rapid_AIO_v4 = hf_hub_download(repo_id="Phr00t/Qwen-Image-Edit-Rapid-AIO", filename="Qwen-Rapid-AIO-v4.safetensors", cache_dir="/cache")
     subprocess.run(f"ln -s '{Qwen_Rapid_AIO_v4}' '/root/comfy/ComfyUI/models/checkpoints/Qwen-Rapid-AIO-v4.safetensors'", shell=True, check=True)
