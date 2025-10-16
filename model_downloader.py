@@ -5,17 +5,22 @@ from pathlib import Path
 civit_token = os.environ.get("civit_token")
 
 models_list = {
+        "Qwen_Image_Edit_Rapid_AIO_v5": {
+            "name": "Qwen-Rapid-AIO-v5.safetensors", 
+            "subdir": "checkpoints",
+            "url": f"https://huggingface.co/Phr00t/Qwen-Image-Edit-Rapid-AIO/resolve/main/v5/Qwen-Rapid-AIO-NSFW-v5.safetensors"
+        },
         "epiCRealism_XL": {
             "name": "epiCRealism_XL.safetensors", 
             "subdir": "checkpoints",
             "url": f"https://civitai.com/api/download/models/1920523?type=Model&format=SafeTensor&token={civit_token}"
         },
-        "GFPGANv1.4": {
+        "GFPGANv1_4": {
             "name": "GFPGANv1.4.pth",
             "subdir": "upscale_models",
             "url": "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth"
         },
-        "4x-Ultrasharp": {
+        "4x_Ultrasharp": {
             "name": "4x-UltraSharp.pth",
             "subdir": "upscale_models",
             "url": "https://civitai.com/api/download/models/125843?type=Model&format=PickleTensor&token={civit_token}"
