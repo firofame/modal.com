@@ -10,10 +10,15 @@ models_list = {
             "subdir": "checkpoints",
             "url": f"https://civitai.com/api/download/models/1920523?type=Model&format=SafeTensor&token={civit_token}"
         },
-        "SkinDiffDetail": {
-            "name": "1x-ITF-SkinDiffDetail-Lite-v1.pth",
+        "GFPGANv1.4": {
+            "name": "GFPGANv1.4.pth",
             "subdir": "upscale_models",
-            "url": "https://objectstorage.us-phoenix-1.oraclecloud.com/n/ax6ygfvpvzka/b/open-modeldb-files/o/1x-ITF-SkinDiffDetail-Lite-v1.pth"
+            "url": "https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth"
+        },
+        "4x-Ultrasharp": {
+            "name": "4x-UltraSharp.pth",
+            "subdir": "upscale_models",
+            "url": "https://civitai.com/api/download/models/125843?type=Model&format=PickleTensor&token={civit_token}"
         },
     }
 
