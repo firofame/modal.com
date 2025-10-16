@@ -12,6 +12,7 @@ seconds = 3
 import modal
 import subprocess
 from pathlib import Path
+from comfi_helper import download_models
 
 volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
@@ -25,8 +26,7 @@ image = (
     .run_commands("comfy node install ComfyUI-Crystools")
     .run_commands("comfy node install comfyui-impact-pack comfyui-impact-subpack") # face_detailer
     .run_commands("comfy node install ComfyUI-WanVideoWrapper comfyui-kjnodes comfyui-videohelpersuite ComfyUI-MelBandRoFormer") # infinite_talk
-    .add_local_file("./comfi_helper.py", remote_path="/root/comfi_helper.py", copy=True)
-    .run_function(__import__('comfi_helper').download_models, volumes={"/cache": volume})
+    .run_function(download_models, volumes={"/cache": volume})
     .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
     .add_local_file(f"/Users/firozahmed/Downloads/{audio}", remote_path=f"/root/comfy/ComfyUI/input/{audio}")
 )
