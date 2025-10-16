@@ -2,7 +2,7 @@
 # venv/bin/modal serve comfi.py
 # https://registry.comfy.org/
 
-prompt = "cute woman"
+prompt = "modest woman"
 photo = "photo.png"
 width = 288
 height = 512
@@ -42,11 +42,9 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 @app.cls(gpu="L40s")
 @modal.concurrent(max_inputs=5)
 class ComfyUI:
-    @modal.enter()
-    def launch_comfy_background(self):
-        launch_comfy_background("face_detailer", prompt, photo, width, height, audio, seconds)
     @modal.method()
     def infer(self) -> tuple[bytes, str]:
+        launch_comfy_background("face_detailer", prompt, photo, width, height, audio, seconds)
         return run_workflow()
 
 @app.local_entrypoint()
