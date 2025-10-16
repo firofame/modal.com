@@ -2,7 +2,23 @@ import os
 import subprocess
 from pathlib import Path
 
-def download_and_link(model_info):
+civit_token = os.environ.get("civit_token")
+
+models_list = {
+        "epiCRealism_XL": {
+            "name": "epiCRealism_XL.safetensors", 
+            "subdir": "checkpoints",
+            "url": f"https://civitai.com/api/download/models/1920523?type=Model&format=SafeTensor&token={civit_token}"
+        },
+        "SkinDiffDetail": {
+            "name": "1x-ITF-SkinDiffDetail-Lite-v1.pth",
+            "subdir": "upscale_models",
+            "url": "https://objectstorage.us-phoenix-1.oraclecloud.com/n/ax6ygfvpvzka/b/open-modeldb-files/o/1x-ITF-SkinDiffDetail-Lite-v1.pth"
+        },
+    }
+
+def download_and_link(model_id):
+    model_info = models_list.get(model_id)
     model_name = model_info["name"]
     model_subdir = model_info["subdir"]
     model_url = model_info["url"]

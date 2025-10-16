@@ -1,29 +1,12 @@
 # venv/bin/modal run comfi.py
 # https://registry.comfy.org/
 
-photo = "photo.png"
+photo = "photo.jpeg"
 
 def download_models():
     from model_downloader import download_and_link
-    import os
-
-    civit_token = os.environ.get("CIVIT_TOKEN")
-
-    models_to_download = [
-        {
-            "name": "epiCRealism_XL.safetensors", 
-            "subdir": "checkpoints",
-            "url": "https://civitai.com/api/download/models/1920523?type=Model&format=SafeTensor&token={civit_token}"
-        },
-        {
-            "name": "1x-ITF-SkinDiffDetail-Lite-v1.pth",
-            "subdir": "upscale_models",
-            "url": "https://objectstorage.us-phoenix-1.oraclecloud.com/n/ax6ygfvpvzka/b/open-modeldb-files/o/1x-ITF-SkinDiffDetail-Lite-v1.pth"
-        },
-    ]
-
-    for model in models_to_download:
-        download_and_link(model)
+    download_and_link("epiCRealism_XL")
+    download_and_link("SkinDiffDetail")
 
 import modal
 import subprocess
@@ -38,7 +21,7 @@ image = (
     .run_commands("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
     .add_local_file("./model_downloader.py", remote_path="/root/model_downloader.py", copy=True)
-    .run_function(download_models, volumes={"/cache": volume}, secrets=[modal.Secret.from_name("huggingface-secret"), modal.Secret.from_name("custom-secret")])
+    .run_function(download_models, volumes={"/cache": volume})
     .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
 )
 app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
