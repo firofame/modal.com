@@ -25,6 +25,41 @@ models_list = {
             "subdir": "upscale_models",
             "url": "https://civitai.com/api/download/models/125843?type=Model&format=PickleTensor&token={civit_token}"
         },
+        "Wan2_1_InfiniteTalk_Single_Q8": {
+            "name": "Wan2_1-InfiniteTalk_Single_Q8.gguf",
+            "subdir": "unet",
+            "url": "https://huggingface.co/Kijai/WanVideo_comfy_GGUF/resolve/main/InfiniteTalk/Wan2_1-InfiniteTalk_Single_Q8.gguf"
+        },
+        "wan2_1_i2v_14b_480p_Q8_0": {
+            "name": "wan2.1-i2v-14b-480p-Q8_0.gguf",
+            "subdir": "unet",
+            "url": "https://huggingface.co/city96/Wan2.1-I2V-14B-480P-gguf/resolve/main/wan2.1-i2v-14b-480p-Q8_0.gguf"
+        },
+        "Wan2_1_VAE_bf16": {
+            "name": "Wan2_1_VAE_bf16.safetensors",
+            "subdir": "vae",
+            "url": "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Wan2_1_VAE_bf16.safetensors"
+        },
+        "lightx2v_I2V_14B_480p_cfg_step_distill_rank256_bf16": {
+            "name": "lightx2v_I2V_14B_480p_cfg_step_distill_rank256_bf16.safetensors",
+            "subdir": "loras",
+            "url": "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/Lightx2v/lightx2v_I2V_14B_480p_cfg_step_distill_rank256_bf16.safetensors"
+        },
+        "clip_vision_h": {
+            "name": "clip_vision_h.safetensors",
+            "subdir": "clip_vision",
+            "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/clip_vision/clip_vision_h.safetensors"
+        },
+        "umt5_xxl_enc_bf16": {
+            "name": "umt5-xxl-enc-bf16.safetensors",
+            "subdir": "text_encoders",
+            "url": "https://huggingface.co/Kijai/WanVideo_comfy/resolve/main/umt5-xxl-enc-bf16.safetensors"
+        },
+        "MelBandRoformer_fp16": {
+            "name": "MelBandRoformer_fp16.safetensors",
+            "subdir": "diffusion_models",
+            "url": "https://huggingface.co/Kijai/MelBandRoFormer_comfy/resolve/main/MelBandRoformer_fp16.safetensors"
+        },
     }
 
 def download_and_link(model_id):

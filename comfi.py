@@ -10,7 +10,13 @@ seconds = 3
 
 def download_models():
     from model_downloader import download_and_link
-    download_and_link("Qwen_Image_Edit_Rapid_AIO_v5")
+    download_and_link("Wan2_1_InfiniteTalk_Single_Q8")
+    download_and_link("wan2_1_i2v_14b_480p_Q8_0")
+    download_and_link("Wan2_1_VAE_bf16")
+    download_and_link("lightx2v_I2V_14B_480p_cfg_step_distill_rank256_bf16")
+    download_and_link("clip_vision_h")
+    download_and_link("umt5_xxl_enc_bf16")
+    download_and_link("MelBandRoformer_fp16")
 
 import modal
 import subprocess
@@ -20,14 +26,18 @@ volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
     modal.Image.from_registry("pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel")
     .run_commands("apt update")
-    .apt_install("git", "aria2", "libgl1", "libglib2.0-0")
+    .apt_install("git", "aria2", "libgl1", "libglib2.0-0", "ninja-build")
+    .uv_pip_install("setuptools", "wheel", "ninja")
+    .run_commands('TORCH_CUDA_ARCH_LIST="8.9" pip install --use-pep517 --no-build-isolation git+https://github.com/winggan/SageAttention.git@patch-1')
     .uv_pip_install("comfy-cli")
     .run_commands("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml")
     .run_commands("comfy node install ComfyUI-Crystools")
-    .run_commands("comfy node install comfyui-impact-pack comfyui-impact-subpack")
+    .run_commands("comfy node install comfyui-impact-pack comfyui-impact-subpack") # face_detailer
+    .run_commands("comfy node install ComfyUI-WanVideoWrapper comfyui-kjnodes comfyui-videohelpersuite ComfyUI-MelBandRoFormer") # infinite_talk
     .add_local_file("./model_downloader.py", remote_path="/root/model_downloader.py", copy=True)
     .run_function(download_models, volumes={"/cache": volume})
     .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
+    .add_local_file(f"/Users/firozahmed/Downloads/{audio}", remote_path=f"/root/comfy/ComfyUI/input/{audio}")
 )
 app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 
