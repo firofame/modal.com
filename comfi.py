@@ -1,48 +1,46 @@
 # venv/bin/modal run comfi.py
 # https://registry.comfy.org/
 
-prompt = "change the background to green"
-photo = "photo.jpg"
+photo = "photo.png"
 
-import subprocess
+def download_models():
+    from model_downloader import download_and_link
+    import os
+
+    civit_token = os.environ.get("CIVIT_TOKEN")
+
+    models_to_download = [
+        {
+            "name": "epiCRealism_XL.safetensors", 
+            "subdir": "checkpoints",
+            "url": "https://civitai.com/api/download/models/1920523?type=Model&format=SafeTensor&token={civit_token}"
+        },
+        {
+            "name": "1x-ITF-SkinDiffDetail-Lite-v1.pth",
+            "subdir": "upscale_models",
+            "url": "https://objectstorage.us-phoenix-1.oraclecloud.com/n/ax6ygfvpvzka/b/open-modeldb-files/o/1x-ITF-SkinDiffDetail-Lite-v1.pth"
+        },
+    ]
+
+    for model in models_to_download:
+        download_and_link(model)
+
 import modal
+import subprocess
 from pathlib import Path
 
+volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
     modal.Image.from_registry("pytorch/pytorch:2.8.0-cuda12.9-cudnn9-devel")
     .run_commands("apt update")
-    .apt_install("git", "aria2", "ffmpeg")
-    .uv_pip_install("opencv-python-headless", "huggingface-hub[hf-transfer]", "comfy-cli")
-    .env({"HF_HUB_ENABLE_HF_TRANSFER": "1", "HF_HOME": "/cache"})
+    .apt_install("git", "aria2")
+    .uv_pip_install("comfy-cli")
     .run_commands("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml")
-    .run_commands("comfy node install ComfyUI-Crystools qweneditutils")
-)
-
-def download_models():
-    from huggingface_hub import hf_hub_download
-    import os
-
-    models = [
-        {"id": "1920523", "name": "epiCRealism_XL.safetensors", "subdir": "checkpoints"},
-    ]
-    cache_dir = "/cache"
-    comfy_dir = "/root/comfy/ComfyUI/models/"
-    token = os.environ["CIVIT_TOKEN"]
-    for m in models:
-        url = f"https://civitai.com/api/download/models/{m['id']}?type=Model&format=SafeTensor&token={token}"
-        dest = os.path.join(cache_dir, m["name"])
-        link = os.path.join(comfy_dir, m["subdir"], m["name"])
-        if not os.path.exists(dest):
-            subprocess.run(f"aria2c -x 8 -c -o {os.path.basename(dest)} -d {os.path.dirname(dest)} '{url}'", shell=True, check=True)        
-        subprocess.run(f"ln -s '{dest}' '{link}'", shell=True, check=True)
-
-    Qwen_Rapid_AIO_v4 = hf_hub_download(repo_id="Phr00t/Qwen-Image-Edit-Rapid-AIO", filename="Qwen-Rapid-AIO-v4.safetensors", cache_dir="/cache")
-    subprocess.run(f"ln -s '{Qwen_Rapid_AIO_v4}' '/root/comfy/ComfyUI/models/checkpoints/Qwen-Rapid-AIO-v4.safetensors'", shell=True, check=True)
-
-volume = modal.Volume.from_name("hf-hub-cache", create_if_missing=True)
-image = image.run_function(download_models, volumes={"/cache": volume}, secrets=[modal.Secret.from_name("huggingface-secret"), modal.Secret.from_name("custom-secret")]) \
+    .run_commands("comfy node install ComfyUI-Crystools")
+    .add_local_file("./model_downloader.py", remote_path="/root/model_downloader.py", copy=True)
+    .run_function(download_models, volumes={"/cache": volume}, secrets=[modal.Secret.from_name("huggingface-secret"), modal.Secret.from_name("custom-secret")])
     .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
-
+)
 app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 
 # @app.function(max_containers=1, gpu="T4")
@@ -51,7 +49,7 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 # def ui():
 #     subprocess.Popen("comfy launch -- --listen 0.0.0.0", shell=True)
 
-@app.cls(gpu="L40s")
+@app.cls(gpu="T4")
 @modal.concurrent(max_inputs=5)
 class ComfyUI:
     @modal.enter()
@@ -60,7 +58,7 @@ class ComfyUI:
         import json
 
         seed = random.randint(0, 2**32 - 1)
-        workflow_api={"1":{"inputs":{"ckpt_name":"Qwen-Rapid-AIO-v4.safetensors"},"class_type":"CheckpointLoaderSimple","_meta":{"title":"Load Checkpoint"}},"2":{"inputs":{"seed":seed,"steps":8,"cfg":1,"sampler_name":"euler_ancestral","scheduler":"beta","denoise":1,"model":["1",0],"positive":["3",0],"negative":["4",0],"latent_image":["9",0]},"class_type":"KSampler","_meta":{"title":"KSampler"}},"3":{"inputs":{"prompt":prompt,"clip":["1",1],"vae":["1",2],"image1":["22",0]},"class_type":"TextEncodeQwenImageEditPlus","_meta":{"title":"TextEncodeQwenImageEditPlus Input Prompt"}},"4":{"inputs":{"prompt":"","clip":["1",1],"vae":["1",2]},"class_type":"TextEncodeQwenImageEditPlus","_meta":{"title":"TextEncodeQwenImageEditPlus Negative (leave blank)"}},"5":{"inputs":{"samples":["2",0],"vae":["1",2]},"class_type":"VAEDecode","_meta":{"title":"VAE Decode"}},"7":{"inputs":{"image":photo},"class_type":"LoadImage","_meta":{"title":"Load Image"}},"9":{"inputs":{"width":["33",0],"height":["33",1],"batch_size":1},"class_type":"EmptyLatentImage","_meta":{"title":"Empty Latent Image"}},"22":{"inputs":{"upscale_method":"lanczos","megapixels":1.0000000000000002,"image":["7",0]},"class_type":"ImageScaleToTotalPixels","_meta":{"title":"Scale Image to Total Pixels"}},"27":{"inputs":{"filename_prefix":"ComfyUI","images":["5",0]},"class_type":"SaveImage","_meta":{"title":"Save Image"}},"33":{"inputs":{"image":["22",0]},"class_type":"GetImageSize","_meta":{"title":"Get Image Size"}}}
+        workflow_api={"205":{"inputs":{"seed":seed,"steps":20,"cfg":3.5,"sampler_name":"dpmpp_2m_sde","scheduler":"karras","denoise":0.03,"model":["219",0],"positive":["207",0],"negative":["208",0],"latent_image":["210",0]},"class_type":"KSampler","_meta":{"title":"KSampler"}},"207":{"inputs":{"text":"Realistic skin detail, blemishes, imperfections, pores","clip":["219",1]},"class_type":"CLIPTextEncode","_meta":{"title":"CLIP Text Encode (Prompt)"}},"208":{"inputs":{"text":"","clip":["219",1]},"class_type":"CLIPTextEncode","_meta":{"title":"CLIP Text Encode (Prompt)"}},"210":{"inputs":{"pixels":["214",0],"vae":["219",2]},"class_type":"VAEEncode","_meta":{"title":"VAE Encode"}},"212":{"inputs":{"samples":["205",0],"vae":["219",2]},"class_type":"VAEDecode","_meta":{"title":"VAE Decode"}},"214":{"inputs":{"upscale_method":"lanczos","scale_by":1.5,"image":["225",0]},"class_type":"ImageScaleBy","_meta":{"title":"Upscale Image By"}},"216":{"inputs":{"upscale_method":"lanczos","megapixels":1,"image":["212",0]},"class_type":"ImageScaleToTotalPixels","_meta":{"title":"Scale Image to Total Pixels"}},"219":{"inputs":{"ckpt_name":"epiCRealism_XL.safetensors"},"class_type":"CheckpointLoaderSimple","_meta":{"title":"Load Checkpoint"}},"220":{"inputs":{"upscale_model":["221",0],"image":["216",0]},"class_type":"ImageUpscaleWithModel","_meta":{"title":"Upscale Image (using Model)"}},"221":{"inputs":{"model_name":"1x-ITF-SkinDiffDetail-Lite-v1.pth"},"class_type":"UpscaleModelLoader","_meta":{"title":"Load Upscale Model"}},"223":{"inputs":{"filename_prefix":"ComfyUI","images":["220",0]},"class_type":"SaveImage","_meta":{"title":"Save Image"}},"225":{"inputs":{"image":photo},"class_type":"LoadImage","_meta":{"title":"Load Image"}}}
         with open("/root/workflow_api.json", "w") as f:
             json.dump(workflow_api, f)
         subprocess.run("comfy launch --background", shell=True, check=True)
