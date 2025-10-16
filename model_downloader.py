@@ -107,3 +107,7 @@ def download_and_link(model_id):
             print(f"Cannot create link. Source file '{cache_path}' not found.")
     else:
         print(f"Link for '{model_name}' already exists. Skipping.")
+
+def download_models():
+    for model_id in models_list:
+        download_and_link(model_id)

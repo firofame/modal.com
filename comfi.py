@@ -10,15 +10,8 @@ audio = "audio.wav"
 seconds = 10
 
 def download_models():
-    from model_downloader import download_and_link
-    download_and_link("Wan2_1_InfiniteTalk_Single_Q8")
-    download_and_link("wan2_1_i2v_14b_480p_Q8_0")
-    download_and_link("Wan2_1_VAE_bf16")
-    download_and_link("lightx2v_I2V_14B_480p_cfg_step_distill_rank256_bf16")
-    download_and_link("clip_vision_h")
-    download_and_link("umt5_xxl_enc_bf16")
-    download_and_link("MelBandRoformer_fp16")
-    download_and_link("wav2vec2_chinese_base_fp16")
+    from model_downloader import download_models
+    download_models()
 
 import modal
 import subprocess
