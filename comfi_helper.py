@@ -126,3 +126,13 @@ def launch_comfy_background(workflow_name, prompt, photo, width, height, audio, 
         json.dump(workflow_api, f)
     # Launch ComfyUI in the background
     subprocess.run("comfy launch --background", shell=True, check=True)
+
+def run_workflow() -> tuple[bytes, str]:
+    subprocess.run(f"comfy run --workflow /root/workflow_api.json --wait --timeout 1200 --verbose", shell=True, check=True)
+
+    output_dir = Path("/root/comfy/ComfyUI/output")
+    output_files = list(output_dir.glob("*"))
+    if not output_files:
+        raise FileNotFoundError("No output file found from ComfyUI run.")
+    latest_file = max(output_files, key=lambda p: p.stat().st_ctime)
+    return latest_file.read_bytes(), latest_file.suffix

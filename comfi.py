@@ -2,7 +2,7 @@
 # venv/bin/modal serve comfi.py
 # https://registry.comfy.org/
 
-prompt = "cute african american muslim woman wearing a modest black abaya"
+prompt = "cute woman"
 photo = "photo.png"
 width = 288
 height = 512
@@ -12,7 +12,7 @@ seconds = 3
 import modal
 import subprocess
 from pathlib import Path
-from comfi_helper import download_models, launch_comfy_background
+from comfi_helper import download_models, launch_comfy_background, run_workflow
 
 volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
@@ -44,19 +44,10 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 class ComfyUI:
     @modal.enter()
     def launch_comfy_background(self):
-        launch_comfy_background("qwen_edit", prompt, photo, width, height, audio, seconds)
-
+        launch_comfy_background("face_detailer", prompt, photo, width, height, audio, seconds)
     @modal.method()
-    def infer(self, workflow_path: str = "/root/workflow_api.json") -> tuple[bytes, str]:
-        subprocess.run(f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose", shell=True, check=True)
-        
-        output_dir = Path("/root/comfy/ComfyUI/output")
-        output_files = list(output_dir.glob("*"))
-        if not output_files:
-            raise FileNotFoundError("No output file found from ComfyUI run.")
-        latest_file = max(output_files, key=lambda p: p.stat().st_ctime)
-        return latest_file.read_bytes(), latest_file.suffix
-        
+    def infer(self) -> tuple[bytes, str]:
+        return run_workflow()
 
 @app.local_entrypoint()
 def main():
@@ -64,6 +55,5 @@ def main():
 
     output_bytes, file_suffix = ComfyUI().infer.remote()
     dt_string = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    output_path = Path(f"/Users/firozahmed/Downloads/comfy_{dt_string}{file_suffix}")
-    output_path.write_bytes(output_bytes)
-    print(f"Output saved to {output_path}")
+    Path(f"/Users/firozahmed/Downloads/comfy_{dt_string}{file_suffix}").write_bytes(output_bytes)
+    print(f"Output saved")
