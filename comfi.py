@@ -7,7 +7,7 @@ photo = "photo.png"
 width = 288
 height = 512
 audio = "audio.wav"
-seconds = 10
+seconds = 3
 
 def download_models():
     from model_downloader import download_models
@@ -56,26 +56,29 @@ class ComfyUI:
             "qwen_edit":{"1":{"inputs":{"ckpt_name":"Qwen-Rapid-AIO-v5.safetensors"},"class_type":"CheckpointLoaderSimple","_meta":{"title":"Load Checkpoint"}},"2":{"inputs":{"seed":seed,"steps":4,"cfg":1,"sampler_name":"sa_solver","scheduler":"beta","denoise":1,"model":["1",0],"positive":["3",0],"negative":["4",0],"latent_image":["12",0]},"class_type":"KSampler","_meta":{"title":"KSampler"}},"3":{"inputs":{"prompt":prompt,"clip":["1",1],"vae":["1",2],"image1":["7",0]},"class_type":"TextEncodeQwenImageEditPlus","_meta":{"title":"TextEncodeQwenImageEditPlus Input Prompt"}},"4":{"inputs":{"prompt":"","clip":["1",1],"vae":["1",2]},"class_type":"TextEncodeQwenImageEditPlus","_meta":{"title":"TextEncodeQwenImageEditPlus Negative (leave blank)"}},"5":{"inputs":{"samples":["2",0],"vae":["1",2]},"class_type":"VAEDecode","_meta":{"title":"VAE Decode"}},"7":{"inputs":{"image":photo},"class_type":"LoadImage","_meta":{"title":"Optional Input Image"}},"10":{"inputs":{"filename_prefix":"ComfyUI","images":["5",0]},"class_type":"SaveImage","_meta":{"title":"Save Image"}},"11":{"inputs":{"upscale_method":"nearest-exact","megapixels":1,"image":["7",0]},"class_type":"ImageScaleToTotalPixels","_meta":{"title":"Scale Image to Total Pixels"}},"12":{"inputs":{"pixels":["11",0],"vae":["1",2]},"class_type":"VAEEncode","_meta":{"title":"VAE Encode"}}},
             "face_detailer":{"4":{"inputs":{"ckpt_name":"epiCRealism_XL.safetensors"},"class_type":"CheckpointLoaderSimple","_meta":{"title":"Load Checkpoint"}},"5":{"inputs":{"text":prompt,"clip":["4",1]},"class_type":"CLIPTextEncode","_meta":{"title":"Positive"}},"6":{"inputs":{"text":"","clip":["4",1]},"class_type":"CLIPTextEncode","_meta":{"title":"Negative"}},"16":{"inputs":{"model_name":"sam_vit_b_01ec64.pth","device_mode":"AUTO"},"class_type":"SAMLoader","_meta":{"title":"SAMLoader (Impact)"}},"51":{"inputs":{"guide_size":360,"guide_size_for":True,"max_size":768,"seed":seed,"steps":20,"cfg":8,"sampler_name":"euler","scheduler":"normal","denoise":0.5,"feather":5,"noise_mask":True,"force_inpaint":False,"bbox_threshold":0.5,"bbox_dilation":15,"bbox_crop_factor":3,"sam_detection_hint":"center-1","sam_dilation":0,"sam_threshold":0.93,"sam_bbox_expansion":0,"sam_mask_hint_threshold":0.7,"sam_mask_hint_use_negative":"False","drop_size":10,"wildcard":"","cycle":1,"inpaint_model":False,"noise_mask_feather":20,"tiled_encode":False,"tiled_decode":False,"image":["62",0],"model":["4",0],"clip":["4",1],"vae":["4",2],"positive":["5",0],"negative":["6",0],"bbox_detector":["53",0],"sam_model_opt":["16",0]},"class_type":"FaceDetailer","_meta":{"title":"FaceDetailer"}},"53":{"inputs":{"model_name":"bbox/face_yolov8m.pt"},"class_type":"UltralyticsDetectorProvider","_meta":{"title":"UltralyticsDetectorProvider"}},"62":{"inputs":{"image":photo},"class_type":"LoadImage","_meta":{"title":"Load Image"}},"63":{"inputs":{"filename_prefix":"ComfyUI","images":["51",0]},"class_type":"SaveImage","_meta":{"title":"Save Image"}}}
         }
-        workflow_api = workflow_api_list["qwen_edit"]
+        workflow_api = workflow_api_list["infinite_talk"]
         with open("/root/workflow_api.json", "w") as f:
             json.dump(workflow_api, f)
         subprocess.run("comfy launch --background", shell=True, check=True)
 
     @modal.method()
-    def infer(self, workflow_path: str = "/root/workflow_api.json"):
+    def infer(self, workflow_path: str = "/root/workflow_api.json") -> tuple[bytes, str]:
         subprocess.run(f"comfy run --workflow {workflow_path} --wait --timeout 1200 --verbose", shell=True, check=True)
         
-        # file_path = Path("/root/comfy/ComfyUI/output/ComfyUI_00001-audio.mp4")
-        file_path = Path("/root/comfy/ComfyUI/output/ComfyUI_00001_.png")
-        return file_path.read_bytes()
+        output_dir = Path("/root/comfy/ComfyUI/output")
+        output_files = list(output_dir.glob("*"))
+        if not output_files:
+            raise FileNotFoundError("No output file found from ComfyUI run.")
+        latest_file = max(output_files, key=lambda p: p.stat().st_ctime)
+        return latest_file.read_bytes(), latest_file.suffix
         
 
 @app.local_entrypoint()
 def main():
     import datetime
 
-    output_bytes = ComfyUI().infer.remote()
-    datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    output_path = Path(f"/Users/firozahmed/Downloads/comfy_{datetime}.png")
+    output_bytes, file_suffix = ComfyUI().infer.remote()
+    dt_string = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_path = Path(f"/Users/firozahmed/Downloads/comfy_{dt_string}{file_suffix}")
     output_path.write_bytes(output_bytes)
     print(f"Output saved to {output_path}")
