@@ -60,6 +60,11 @@ models_list = {
             "subdir": "diffusion_models",
             "url": "https://huggingface.co/Kijai/MelBandRoFormer_comfy/resolve/main/MelBandRoformer_fp16.safetensors"
         },
+        "wav2vec2_chinese_base_fp16": {
+            "name": "wav2vec2-chinese-base_fp16.safetensors",
+            "subdir": "wav2vec2",
+            "url": "https://huggingface.co/Kijai/wav2vec2_safetensors/resolve/main/wav2vec2-chinese-base_fp16.safetensors"
+        },
     }
 
 def download_and_link(model_id):
