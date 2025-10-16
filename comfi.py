@@ -2,7 +2,7 @@
 # venv/bin/modal serve comfi.py
 # https://registry.comfy.org/
 
-prompt = "cute african muslim woman"
+prompt = "cute african american muslim woman wearing a modest black abaya"
 photo = "photo.png"
 width = 288
 height = 512
@@ -12,7 +12,7 @@ seconds = 3
 import modal
 import subprocess
 from pathlib import Path
-from comfi_helper import download_models, get_workflow_api
+from comfi_helper import download_models, launch_comfy_background
 
 volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
@@ -44,12 +44,7 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 class ComfyUI:
     @modal.enter()
     def launch_comfy_background(self):
-        workflow_api_list = get_workflow_api(prompt, photo, width, height, audio, seconds)
-        workflow_api = workflow_api_list["face_detailer"]
-        with open("/root/workflow_api.json", "w") as f:
-            import json
-            json.dump(workflow_api, f)
-        subprocess.run("comfy launch --background", shell=True, check=True)
+        launch_comfy_background("qwen_edit", prompt, photo, width, height, audio, seconds)
 
     @modal.method()
     def infer(self, workflow_path: str = "/root/workflow_api.json") -> tuple[bytes, str]:
