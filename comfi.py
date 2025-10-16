@@ -2,7 +2,7 @@
 # venv/bin/modal serve comfi.py
 # https://registry.comfy.org/
 
-prompt = "modest woman"
+prompt = "muslim woman"
 photo = "photo.png"
 width = 288
 height = 512
@@ -12,7 +12,7 @@ seconds = 3
 import modal
 import subprocess
 from pathlib import Path
-from comfi_helper import download_models, launch_comfy_background, run_workflow
+from comfi_helper import download_models, launch_comfy
 
 volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
@@ -44,8 +44,7 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 class ComfyUI:
     @modal.method()
     def infer(self) -> tuple[bytes, str]:
-        launch_comfy_background("face_detailer", prompt, photo, width, height, audio, seconds)
-        return run_workflow()
+        return launch_comfy("face_detailer", prompt, photo, width, height, audio, seconds)
 
 @app.local_entrypoint()
 def main():
