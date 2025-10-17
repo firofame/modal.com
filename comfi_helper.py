@@ -67,6 +67,31 @@ models_list = {
             "subdir": "wav2vec2",
             "url": "https://huggingface.co/Kijai/wav2vec2_safetensors/resolve/main/wav2vec2-chinese-base_fp16.safetensors"
         },
+        "Qwen_Image_Edit_2509_GGUF": {
+            "name": "Qwen-Image-Edit-2509-Q8_0.gguf",
+            "subdir": "unet",
+            "url": "https://huggingface.co/QuantStack/Qwen-Image-Edit-2509-GGUF/resolve/main/Qwen-Image-Edit-2509-Q8_0.gguf"
+        },
+        "Qwen_Image_Lightning_4steps": {
+            "name": "Qwen-Image-Lightning-4steps-V1.0-bf16.safetensors",
+            "subdir": "loras",
+            "url": "https://huggingface.co/lightx2v/Qwen-Image-Lightning/resolve/main/Qwen-Image-Lightning-4steps-V1.0-bf16.safetensors"
+        },
+        "qwen_2_5_vl_7b_fp8_scaled": {
+            "name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+            "subdir": "text_encoders",
+            "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+        },
+        "qwen_image_vae": {
+            "name": "qwen_image_vae.safetensors",
+            "subdir": "vae",
+            "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors"
+        },
+        "flux1_dev_fp8": {
+            "name": "flux1-dev-fp8.safetensors",
+            "subdir": "checkpoints",
+            "url": "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors"
+        },
     }
 
 def download_and_link(model_id):
@@ -85,19 +110,7 @@ def download_and_link(model_id):
     
     # 2. Download the file to the cache if it doesn't exist
     if not cache_path.exists():
-        print(f"Downloading {model_name}...")
-        try:
-            subprocess.run([
-                "aria2c", "-x", "8", "-c",
-                "-o", str(cache_path.name),
-                "-d", str(cache_path.parent),
-                model_url
-            ], check=True, capture_output=True, text=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error downloading {model_name}: {e.stderr}")
-            return # Stop processing this model if download fails
-    else:
-        print(f"'{model_name}' already found in cache. Skipping download.")
+        subprocess.run(["aria2c", "-x", "8", "-c", "-o", str(cache_path.name), "-d", str(cache_path.parent), model_url], check=True)
 
     # 3. Create a symbolic link if it doesn't already exist
     if not link_path.is_symlink():
@@ -105,16 +118,13 @@ def download_and_link(model_id):
         if cache_path.exists():
             print(f"Linking '{cache_path}' to '{link_path}'")
             os.symlink(cache_path, link_path)
-        else:
-            print(f"Cannot create link. Source file '{cache_path}' not found.")
-    else:
-        print(f"Link for '{model_name}' already exists. Skipping.")
 
 def install_dependencies():
     subprocess.run("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml", shell=True, check=True)
     subprocess.run("comfy node install ComfyUI-Crystools", shell=True, check=True)
     subprocess.run("comfy node install comfyui-impact-pack comfyui-impact-subpack", shell=True, check=True)
     subprocess.run("comfy node install ComfyUI-WanVideoWrapper comfyui-kjnodes comfyui-videohelpersuite ComfyUI-MelBandRoFormer", shell=True, check=True)
+    subprocess.run("comfy node install comfyui-advancedliveportrait rgthree-comfy comfyui-florence2", shell=True, check=True)
 
 def download_models():
     for model_id in models_list:
@@ -130,7 +140,6 @@ def run_comfy(workflow_name, prompt, photo, width, height, audio, seconds):
     workflow_api = workflow_api_list[workflow_name]
     with open("/root/workflow_api.json", "w") as f:
         json.dump(workflow_api, f)
-    # Launch ComfyUI in the background
     subprocess.run("comfy launch --background", shell=True, check=True)
     subprocess.run(f"comfy run --workflow /root/workflow_api.json --wait --timeout 1200 --verbose", shell=True, check=True)
 
