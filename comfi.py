@@ -34,12 +34,12 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 #     import subprocess
 #     subprocess.Popen("comfy launch -- --listen 0.0.0.0", shell=True)
 
-@app.cls(gpu="T4")
+@app.cls(gpu="L40s", timeout=seconds*70)
 @modal.concurrent(max_inputs=5)
 class ComfyUI:
     @modal.method()
     def infer(self) -> tuple[bytes, str]:
-        return run_comfy("face_detailer", prompt, photo, width, height, audio, seconds)
+        return run_comfy("infinite_talk", prompt, photo, width, height, audio, seconds)
 
 @app.local_entrypoint()
 def main():
