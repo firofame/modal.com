@@ -110,6 +110,13 @@ def download_and_link(model_id):
     else:
         print(f"Link for '{model_name}' already exists. Skipping.")
 
+def install_dependencies():
+    subprocess.run("TORCH_CUDA_ARCH_LIST='8.9' pip install --use-pep517 --no-build-isolation git+https://github.com/winggan/SageAttention.git@patch-1", shell=True, check=True)
+    subprocess.run("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml", shell=True, check=True)
+    subprocess.run("comfy node install ComfyUI-Crystools", shell=True, check=True)
+    subprocess.run("comfy node install comfyui-impact-pack comfyui-impact-subpack", shell=True, check=True)
+    subprocess.run("comfy node install ComfyUI-WanVideoWrapper comfyui-kjnodes comfyui-videohelpersuite ComfyUI-MelBandRoFormer", shell=True, check=True)
+
 def download_models():
     for model_id in models_list:
         download_and_link(model_id)
@@ -126,9 +133,6 @@ def launch_comfy(workflow_name, prompt, photo, width, height, audio, seconds):
         json.dump(workflow_api, f)
     # Launch ComfyUI in the background
     subprocess.run("comfy launch --background", shell=True, check=True)
-    return run_workflow()
-
-def run_workflow() -> tuple[bytes, str]:
     subprocess.run(f"comfy run --workflow /root/workflow_api.json --wait --timeout 1200 --verbose", shell=True, check=True)
 
     output_dir = Path("/root/comfy/ComfyUI/output")
