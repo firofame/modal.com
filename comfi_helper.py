@@ -110,18 +110,6 @@ def download_and_link(model_id):
     else:
         print(f"Link for '{model_name}' already exists. Skipping.")
 
-def install_sage():
-    build_command = """
-    set -e && \\
-    BUILD_DIR=$(mktemp -d) && \\
-    git clone https://github.com/thu-ml/SageAttention.git "$BUILD_DIR" && \\
-    cd "$BUILD_DIR" && \\
-    sed -i '/compute_capabilities = set()/a compute_capabilities = {"8.9"}' setup.py && \\
-    pip install . --use-pep517 --no-build-isolation && \\
-    cd / && rm -rf "$BUILD_DIR" && \\
-    """
-    subprocess.run(build_command, shell=True, check=True)
-
 def install_dependencies():
     subprocess.run("comfy --skip-prompt install --version latest --nvidia --skip-torch-or-directml", shell=True, check=True)
     subprocess.run("comfy node install ComfyUI-Crystools", shell=True, check=True)

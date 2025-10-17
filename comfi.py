@@ -10,7 +10,7 @@ audio = "audio.wav"
 seconds = 3
 
 import modal
-from comfi_helper import install_sage, install_dependencies, download_models, run_comfy
+from comfi_helper import install_dependencies, download_models, run_comfy
 
 volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
@@ -18,7 +18,7 @@ image = (
     .run_commands("apt update")
     .apt_install("git", "aria2", "libgl1", "libglib2.0-0", "ninja-build")
     .uv_pip_install("setuptools", "wheel", "ninja", "comfy-cli")
-    .run_function(install_sage)
+    .run_commands('TORCH_CUDA_ARCH_LIST="8.9" pip install --use-pep517 --no-build-isolation git+https://github.com/winggan/SageAttention.git@patch-1')
     .run_function(install_dependencies)
     .run_function(download_models, volumes={"/cache": volume})
     .add_local_file("/Users/firozahmed/Desktop/modal.com/comfi_helper.py", remote_path="/root/comfi_helper.py")
