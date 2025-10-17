@@ -87,11 +87,6 @@ models_list = {
             "subdir": "vae",
             "url": "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors"
         },
-        "flux1_dev_fp8": {
-            "name": "flux1-dev-fp8.safetensors",
-            "subdir": "checkpoints",
-            "url": "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev-fp8.safetensors"
-        },
     }
 
 def download_and_link(model_id):
@@ -124,7 +119,7 @@ def install_dependencies():
     subprocess.run("comfy node install ComfyUI-Crystools", shell=True, check=True)
     subprocess.run("comfy node install comfyui-impact-pack comfyui-impact-subpack", shell=True, check=True)
     subprocess.run("comfy node install ComfyUI-WanVideoWrapper comfyui-kjnodes comfyui-videohelpersuite ComfyUI-MelBandRoFormer", shell=True, check=True)
-    subprocess.run("comfy node install comfyui-advancedliveportrait rgthree-comfy comfyui-florence2", shell=True, check=True)
+    subprocess.run("comfy node install comfyui-florence2", shell=True, check=True)
 
 def download_models():
     for model_id in models_list:
