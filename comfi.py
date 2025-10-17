@@ -3,6 +3,7 @@
 # https://registry.comfy.org/
 
 prompt = "ugly woman"
+workflow_name = "infinite_talk" # infinite_talk, qwen_edit, face_detailer
 photo = "photo.png"
 width = 288
 height = 512
@@ -39,7 +40,7 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 class ComfyUI:
     @modal.method()
     def infer(self) -> tuple[bytes, str]:
-        return run_comfy("infinite_talk", prompt, photo, width, height, audio, seconds)
+        return run_comfy(workflow_name, prompt, photo, width, height, audio, seconds)
 
 @app.local_entrypoint()
 def main():
