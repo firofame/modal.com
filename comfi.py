@@ -10,9 +10,7 @@ audio = "audio.wav"
 seconds = 3
 
 import modal
-import subprocess
-from pathlib import Path
-from comfi_helper import install_dependencies, download_models, launch_comfy
+from comfi_helper import install_sage, install_dependencies, download_models, run_comfy
 
 volume = modal.Volume.from_name("my-cache", create_if_missing=True)
 image = (
@@ -20,10 +18,11 @@ image = (
     .run_commands("apt update")
     .apt_install("git", "aria2", "libgl1", "libglib2.0-0", "ninja-build")
     .uv_pip_install("setuptools", "wheel", "ninja", "comfy-cli")
+    .run_function(install_sage)
     .run_function(install_dependencies)
     .run_function(download_models, volumes={"/cache": volume})
-    .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
     .add_local_file("/Users/firozahmed/Desktop/modal.com/comfi_helper.py", remote_path="/root/comfi_helper.py")
+    .add_local_file(f"/Users/firozahmed/Downloads/{photo}", remote_path=f"/root/comfy/ComfyUI/input/{photo}")
     .add_local_file(f"/Users/firozahmed/Downloads/{audio}", remote_path=f"/root/comfy/ComfyUI/input/{audio}")
 )
 app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
@@ -32,6 +31,7 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 # @modal.concurrent(max_inputs=10)
 # @modal.web_server(8188, startup_timeout=60)
 # def ui():
+#     import subprocess
 #     subprocess.Popen("comfy launch -- --listen 0.0.0.0", shell=True)
 
 @app.cls(gpu="T4")
@@ -39,11 +39,12 @@ app = modal.App(name="comfy", image=image, volumes={"/cache": volume})
 class ComfyUI:
     @modal.method()
     def infer(self) -> tuple[bytes, str]:
-        return launch_comfy("face_detailer", prompt, photo, width, height, audio, seconds)
+        return run_comfy("face_detailer", prompt, photo, width, height, audio, seconds)
 
 @app.local_entrypoint()
 def main():
     import datetime
+    from pathlib import Path
 
     output_bytes, file_suffix = ComfyUI().infer.remote()
     dt_string = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
